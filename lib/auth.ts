@@ -83,11 +83,18 @@ export async function getSessionUser() {
       username: true,
       email: true,
       role: true,
+      adminId: true,
       createdAt: true,
     },
   });
 
   return user;
+}
+
+export async function getTenantWorkspaceId(): Promise<string | null> {
+  const user = await getSessionUser();
+  if (!user) return null;
+  return user.role === "ADMIN" ? user.id : (user.adminId || user.id);
 }
 
 export { COOKIE_NAME };

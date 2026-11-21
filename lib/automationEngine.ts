@@ -36,11 +36,6 @@ export async function evaluateAutomationRules(
 ): Promise<AutomationResult> {
   const { eventType, content, contactId, conversationId, postId, commentId } = input;
 
-  const rules = await prisma.automationRule.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: "asc" },
-  });
-
   const contact = await prisma.contact.findUnique({
     where: { id: contactId },
   });
@@ -48,6 +43,21 @@ export async function evaluateAutomationRules(
   if (!contact) {
     return { matched: false };
   }
+
+  // Fetch only active rules belonging to this contact's tenant workspace
+  const rules = await prisma.automationRule.findMany({
+    where: {
+      userId: contact.userId,
+      isActive: true,
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  // Fetch tenant-specific Instagram Page Access Token
+  const tenantConfig = await prisma.webhookConfig.findFirst({
+    where: { userId: contact.userId },
+  });
+  const accessToken = tenantConfig?.pageAccessToken || null;
 
   const normalizedContent = normalizeText(content);
 
@@ -148,6 +158,7 @@ export async function evaluateAutomationRules(
         await sendCommentReply({
           commentId,
           text: parsedPublicReply,
+          accessToken,
         });
       }
       publicReplySent = true;
@@ -173,6 +184,7 @@ export async function evaluateAutomationRules(
       await sendDirectMessage({
         recipientId: contact.instagramId,
         text: dmContent,
+        accessToken,
       });
 
       privateReplySent = true;

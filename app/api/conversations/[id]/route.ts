@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantWorkspaceId } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = params;
 
-    const conversation = await prisma.conversation.findUnique({
-      where: { id },
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        id,
+        contact: { userId: workspaceId },
+      },
       include: {
         contact: {
           include: {
@@ -66,8 +77,24 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = params;
     const body = await request.json();
+
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        id,
+        contact: { userId: workspaceId },
+      },
+    });
+
+    if (!conversation) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+    }
 
     const updated = await prisma.conversation.update({
       where: { id },

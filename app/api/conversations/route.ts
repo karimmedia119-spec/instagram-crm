@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantWorkspaceId } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const filter = searchParams.get("filter") || "ALL";
     const search = searchParams.get("search") || "";
 
-    const whereClause: any = {};
+    const whereClause: any = {
+      contact: {
+        userId: workspaceId,
+      },
+    };
 
     if (filter === "DM") {
       whereClause.type = "DM";

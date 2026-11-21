@@ -1,17 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendCommentReply, sendDirectMessage } from "@/lib/metaApi";
+import { getTenantWorkspaceId } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id: conversationId } = params;
     const body = await request.json();
 
-    const conversation = await prisma.conversation.findUnique({
-      where: { id: conversationId },
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        contact: { userId: workspaceId },
+      },
       include: { contact: true },
     });
 
@@ -22,7 +33,9 @@ export async function POST(
     // Action 1: Toggle Like or Hide on an existing comment
     if (body.action === "TOGGLE_LIKE" || body.action === "TOGGLE_HIDE") {
       const { messageId } = body;
-      const targetMessage = await prisma.message.findUnique({ where: { id: messageId } });
+      const targetMessage = await prisma.message.findFirst({
+        where: { id: messageId, conversationId },
+      });
 
       if (!targetMessage) {
         return NextResponse.json({ error: "Message not found" }, { status: 404 });
@@ -65,16 +78,24 @@ export async function POST(
       },
     });
 
-    // Dispatch via Meta API (or simulator)
+    // Fetch tenant-specific Instagram Meta credentials
+    const tenantConfig = await prisma.webhookConfig.findFirst({
+      where: { userId: workspaceId },
+    });
+    const accessToken = tenantConfig?.pageAccessToken || null;
+
+    // Dispatch via Meta API
     if (isPublicComment && parentCommentId) {
       await sendCommentReply({
         commentId: parentCommentId,
         text: content,
+        accessToken,
       });
     } else {
       await sendDirectMessage({
         recipientId: conversation.contact.instagramId,
         text: content,
+        accessToken,
       });
     }
 

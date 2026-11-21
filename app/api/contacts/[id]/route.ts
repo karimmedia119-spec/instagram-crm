@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantWorkspaceId } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = params;
     const body = await request.json();
+
+    const contact = await prisma.contact.findFirst({
+      where: { id, userId: workspaceId },
+    });
+
+    if (!contact) {
+      return NextResponse.json({ error: "Contact not found" }, { status: 404 });
+    }
 
     const dataToUpdate: any = {};
     if (body.email !== undefined) dataToUpdate.email = body.email;

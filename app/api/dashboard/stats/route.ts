@@ -1,18 +1,30 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantWorkspaceId } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const totalConversations = await prisma.conversation.count();
-    const dmCount = await prisma.conversation.count({ where: { type: "DM" } });
-    const commentCount = await prisma.conversation.count({ where: { type: "POST_COMMENT" } });
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    // Count comments that led to a private DM
+    const totalConversations = await prisma.conversation.count({
+      where: { contact: { userId: workspaceId } },
+    });
+    const dmCount = await prisma.conversation.count({
+      where: { type: "DM", contact: { userId: workspaceId } },
+    });
+    const commentCount = await prisma.conversation.count({
+      where: { type: "POST_COMMENT", contact: { userId: workspaceId } },
+    });
+
     const convertedCommentsCount = await prisma.conversation.count({
       where: {
         type: "POST_COMMENT",
+        contact: { userId: workspaceId },
         messages: {
           some: {
             isPublicComment: false,
@@ -26,12 +38,11 @@ export async function GET() {
       : "0.0%";
 
     const recentRules = await prisma.automationRule.findMany({
-      where: { triggerCount: { gt: 0 } },
+      where: { userId: workspaceId, triggerCount: { gt: 0 } },
       orderBy: { updatedAt: "desc" },
       take: 4,
     });
 
-    // 7-day volume timeline
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const activityChart = days.map((day) => ({
       day,
@@ -39,11 +50,11 @@ export async function GET() {
       comments: commentCount > 0 ? Math.round(commentCount / 7) : 0,
     }));
 
-    // Find real posts from database conversations
     const postConversations = await prisma.conversation.findMany({
       where: {
         type: "POST_COMMENT",
         postId: { not: null },
+        contact: { userId: workspaceId },
       },
       include: {
         messages: true,

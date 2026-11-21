@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronLeft,
+  Send,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
@@ -30,7 +31,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Form Fields
+  // Form Fields (Sign In)
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -39,6 +40,9 @@ export default function LoginPage() {
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regRole, setRegRole] = useState("ADMIN");
+  const [regCode, setRegCode] = useState("");
+  const [regCodeSent, setRegCodeSent] = useState(false);
+  const [isSendingRegCode, setIsSendingRegCode] = useState(false);
 
   // Forgot Password Fields
   const [codeSent, setCodeSent] = useState(false);
@@ -80,8 +84,53 @@ export default function LoginPage() {
     }
   };
 
+  const handleSendRegistrationCode = async () => {
+    setIsSendingRegCode(true);
+    try {
+      const res = await fetch("/api/auth/send-register-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: regUsername,
+          email: regEmail,
+        }),
+      });
+
+      const data = await res.json();
+      setIsSendingRegCode(false);
+
+      if (res.ok) {
+        setRegCodeSent(true);
+        toast({
+          title: "Authorization Code Dispatched",
+          description: "6-digit code has been sent to karim.media.119@gmail.com",
+          type: "success",
+        });
+      } else {
+        toast({
+          title: "Dispatch Failed",
+          description: data.error || "Could not dispatch code",
+          type: "error",
+        });
+      }
+    } catch {
+      setIsSendingRegCode(false);
+      toast({ title: "Network error sending code", type: "error" });
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!regCode || regCode.trim().length < 6) {
+      toast({
+        title: "Security Code Required",
+        description: "Please enter the 6-digit code sent to karim.media.119@gmail.com",
+        type: "error",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -93,6 +142,7 @@ export default function LoginPage() {
           email: regEmail,
           password: regPassword,
           role: regRole,
+          code: regCode.trim(),
         }),
       });
 
@@ -102,7 +152,7 @@ export default function LoginPage() {
       if (res.ok) {
         toast({
           title: "Account Created Successfully",
-          description: `Welcome to the CRM, @${data.user.username}!`,
+          description: `Independent workspace initialized for @${data.user.username}!`,
           type: "success",
         });
         router.push("/");
@@ -314,10 +364,22 @@ export default function LoginPage() {
         )}
 
         {/* =========================================================================
-            MODE 2: ADD NEW ACCOUNT (REGISTER)
+            MODE 2: ADD NEW ACCOUNT (WITH MANDATORY SECURITY CODE TO karim.media.119@gmail.com)
            ========================================================================= */}
         {mode === "REGISTER" && (
           <form onSubmit={handleRegister} className="space-y-4">
+            {/* Security Notice Box */}
+            <div className="p-3.5 rounded-xl bg-canvas border border-borderline text-xs space-y-1.5">
+              <div className="flex items-center gap-2 text-charcoal font-semibold">
+                <ShieldCheck className="w-4 h-4 text-charcoal" />
+                <span>Security Authorization Required</span>
+              </div>
+              <p className="text-body text-[11px] leading-relaxed">
+                To create a new account, enter the 6-digit verification code sent to the master authorization email:{" "}
+                <strong className="text-charcoal font-mono">karim.media.119@gmail.com</strong>
+              </p>
+            </div>
+
             <div>
               <label className="text-xs font-semibold text-charcoal block mb-1.5">
                 New Account Username
@@ -383,16 +445,56 @@ export default function LoginPage() {
 
             <div>
               <label className="text-xs font-semibold text-charcoal block mb-1.5">
-                System Role
+                Workspace Role
               </label>
               <select
                 value={regRole}
                 onChange={(e) => setRegRole(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-borderline bg-surface text-xs text-charcoal focus:outline-none focus:border-charcoal"
               >
-                <option value="ADMIN">Administrator (Full Access)</option>
-                <option value="AGENT">CRM Agent (Inbox & Chats)</option>
+                <option value="ADMIN">Administrator (Independent System / مساحة عمل مستقلة)</option>
+                <option value="AGENT">CRM Agent (Team Member / عضو فريق)</option>
               </select>
+            </div>
+
+            {/* Verification Code Dispatch & Input Section */}
+            <div className="p-3.5 rounded-xl border border-borderline bg-canvas/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-charcoal flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-charcoal" />
+                  <span>Security Authorization Code</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSendRegistrationCode}
+                  disabled={isSendingRegCode}
+                  className="text-[11px] font-medium text-charcoal underline hover:opacity-80 flex items-center gap-1 disabled:opacity-50"
+                >
+                  {isSendingRegCode ? (
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Send className="w-3 h-3" />
+                  )}
+                  <span>{regCodeSent ? "Resend Code" : "Send Code to Email"}</span>
+                </button>
+              </div>
+
+              {regCodeSent && (
+                <div className="text-[11px] text-body flex items-center gap-1.5 bg-surface p-2 rounded-lg border border-borderline">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-charcoal" />
+                  <span>Code dispatched to <strong>karim.media.119@gmail.com</strong></span>
+                </div>
+              )}
+
+              <input
+                type="text"
+                required
+                maxLength={6}
+                value={regCode}
+                onChange={(e) => setRegCode(e.target.value)}
+                placeholder="Enter 6-digit code (e.g. 849201)"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-borderline bg-surface text-sm text-charcoal text-center tracking-widest font-mono font-bold focus:outline-none focus:border-charcoal"
+              />
             </div>
 
             <button
@@ -404,7 +506,7 @@ export default function LoginPage() {
                 <RefreshCw className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <span>Create Account</span>
+                  <span>Create Account & Initialize Workspace</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

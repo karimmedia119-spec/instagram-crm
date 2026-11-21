@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantWorkspaceId } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const templates = await prisma.template.findMany({
+      where: { userId: workspaceId },
       orderBy: { createdAt: "asc" },
     });
     return NextResponse.json(templates);
@@ -20,6 +27,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { title, shortcut, content, category = "GENERAL" } = body;
 
@@ -34,6 +46,7 @@ export async function POST(request: NextRequest) {
 
     const template = await prisma.template.create({
       data: {
+        userId: workspaceId,
         title,
         shortcut: cleanShortcut,
         content,

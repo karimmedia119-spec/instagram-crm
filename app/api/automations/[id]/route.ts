@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantWorkspaceId } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = params;
     const body = await request.json();
+
+    const rule = await prisma.automationRule.findFirst({
+      where: { id, userId: workspaceId },
+    });
+
+    if (!rule) {
+      return NextResponse.json({ error: "Automation rule not found" }, { status: 404 });
+    }
 
     const updated = await prisma.automationRule.update({
       where: { id },
@@ -41,7 +57,20 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = params;
+    const rule = await prisma.automationRule.findFirst({
+      where: { id, userId: workspaceId },
+    });
+
+    if (!rule) {
+      return NextResponse.json({ error: "Automation rule not found" }, { status: 404 });
+    }
+
     await prisma.automationRule.delete({
       where: { id },
     });

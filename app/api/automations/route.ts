@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantWorkspaceId } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const rules = await prisma.automationRule.findMany({
+      where: { userId: workspaceId },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(rules);
@@ -20,6 +27,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const {
       name,
@@ -44,6 +56,7 @@ export async function POST(request: NextRequest) {
 
     const rule = await prisma.automationRule.create({
       data: {
+        userId: workspaceId,
         name,
         triggerType,
         postId: postId || null,

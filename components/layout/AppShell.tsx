@@ -19,6 +19,8 @@ import {
   X,
   RefreshCw,
   Lock,
+  Send,
+  CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -59,6 +61,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [newEmail, setNewEmail] = useState("");
   const [newAccPassword, setNewAccPassword] = useState("");
   const [newRole, setNewRole] = useState("ADMIN");
+  const [newAccCode, setNewAccCode] = useState("");
+  const [newAccCodeSent, setNewAccCodeSent] = useState(false);
+  const [isSendingNewAccCode, setIsSendingNewAccCode] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
   // Fetch current user and check unread count
@@ -129,8 +134,48 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleSendNewAccCode = async () => {
+    setIsSendingNewAccCode(true);
+    try {
+      const res = await fetch("/api/auth/send-register-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: newUsername, email: newEmail }),
+      });
+      const data = await res.json();
+      setIsSendingNewAccCode(false);
+      if (res.ok) {
+        setNewAccCodeSent(true);
+        toast({
+          title: "Authorization Code Dispatched",
+          description: "Sent 6-digit code to karim.media.119@gmail.com",
+          type: "success",
+        });
+      } else {
+        toast({
+          title: "Dispatch Failed",
+          description: data.error || "Failed to send code",
+          type: "error",
+        });
+      }
+    } catch {
+      setIsSendingNewAccCode(false);
+      toast({ title: "Network error sending code", type: "error" });
+    }
+  };
+
   const handleCreateNewAccount = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!newAccCode || newAccCode.trim().length < 6) {
+      toast({
+        title: "Security Code Required",
+        description: "Please enter the 6-digit code sent to karim.media.119@gmail.com",
+        type: "error",
+      });
+      return;
+    }
+
     setIsCreatingAccount(true);
 
     try {
@@ -142,6 +187,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           email: newEmail,
           password: newAccPassword,
           role: newRole,
+          code: newAccCode.trim(),
         }),
       });
 
@@ -158,6 +204,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         setNewUsername("");
         setNewEmail("");
         setNewAccPassword("");
+        setNewAccCode("");
+        setNewAccCodeSent(false);
       } else {
         toast({
           title: "Account Creation Failed",
@@ -501,9 +549,49 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     onChange={(e) => setNewRole(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal bg-surface"
                   >
-                    <option value="ADMIN">Administrator (Full Access)</option>
-                    <option value="AGENT">CRM Agent (Inbox & Chats)</option>
+                    <option value="ADMIN">Administrator (Independent System / مساحة عمل مستقلة)</option>
+                    <option value="AGENT">CRM Agent (Team Member / عضو فريق)</option>
                   </select>
+                </div>
+
+                {/* Authorization Code from karim.media.119@gmail.com */}
+                <div className="p-3 rounded-xl border border-borderline bg-canvas/40 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-charcoal flex items-center gap-1.5 text-[11px]">
+                      <KeyRound className="w-3.5 h-3.5 text-charcoal" />
+                      <span>Security Code (karim.media.119@gmail.com)</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleSendNewAccCode}
+                      disabled={isSendingNewAccCode}
+                      className="text-[11px] font-medium text-charcoal underline hover:opacity-85 flex items-center gap-1 disabled:opacity-50"
+                    >
+                      {isSendingNewAccCode ? (
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Send className="w-3 h-3" />
+                      )}
+                      <span>{newAccCodeSent ? "Resend" : "Send Code"}</span>
+                    </button>
+                  </div>
+
+                  {newAccCodeSent && (
+                    <div className="text-[10px] text-body flex items-center gap-1 bg-surface p-1.5 rounded-lg border border-borderline">
+                      <CheckCircle2 className="w-3 h-3 text-charcoal" />
+                      <span>Code sent to karim.media.119@gmail.com</span>
+                    </div>
+                  )}
+
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={newAccCode}
+                    onChange={(e) => setNewAccCode(e.target.value)}
+                    placeholder="Enter 6-digit code"
+                    className="w-full px-3 py-2 rounded-xl border border-borderline text-xs text-charcoal font-mono font-bold tracking-widest text-center focus:outline-none focus:border-charcoal bg-surface"
+                  />
                 </div>
 
                 <div className="pt-3 border-t border-borderline flex items-center justify-end gap-3">

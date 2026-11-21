@@ -1,12 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantWorkspaceId } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id: contactId } = params;
+    const contact = await prisma.contact.findFirst({
+      where: { id: contactId, userId: workspaceId },
+    });
+
+    if (!contact) {
+      return NextResponse.json({ error: "Contact not found" }, { status: 404 });
+    }
+
     const { content, author = "Senior Advisor" } = await request.json();
 
     if (!content || content.trim() === "") {
@@ -33,11 +49,27 @@ export async function POST(
 
 export async function DELETE(request: NextRequest) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const noteId = searchParams.get("noteId");
 
     if (!noteId) {
       return NextResponse.json({ error: "noteId is required" }, { status: 400 });
+    }
+
+    const note = await prisma.contactNote.findFirst({
+      where: {
+        id: noteId,
+        contact: { userId: workspaceId },
+      },
+    });
+
+    if (!note) {
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
     await prisma.contactNote.delete({

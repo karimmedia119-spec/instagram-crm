@@ -4,10 +4,8 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Seeding clean production database...");
+  console.log("Seeding multi-tenant production database...");
 
-  await prisma.passwordResetCode.deleteMany();
-  await prisma.user.deleteMany();
   await prisma.webhookLog.deleteMany();
   await prisma.contactNote.deleteMany();
   await prisma.message.deleteMany();
@@ -16,12 +14,14 @@ async function main() {
   await prisma.automationRule.deleteMany();
   await prisma.template.deleteMany();
   await prisma.webhookConfig.deleteMany();
+  await prisma.passwordResetCode.deleteMany();
+  await prisma.user.deleteMany();
 
-  // Create clean admin user
+  // Create clean primary admin user
   const salt = await bcrypt.genSalt(10);
   const adminPasswordHash = await bcrypt.hash("admin123", salt);
 
-  await prisma.user.create({
+  const admin = await prisma.user.create({
     data: {
       username: "admin",
       email: "karim.media.119@gmail.com",
@@ -30,9 +30,10 @@ async function main() {
     },
   });
 
-  // Create default Webhook configuration
+  // Create default Webhook configuration for the admin
   await prisma.webhookConfig.create({
     data: {
+      userId: admin.id,
       verifyToken: "ig_crm_secret_token_2026",
       appSecret: "",
       businessAccountId: "",
@@ -48,7 +49,7 @@ async function main() {
     },
   });
 
-  console.log("Clean production seed complete! Ready for live use.");
+  console.log("Multi-tenant database initialized! Primary admin created:", admin.username);
 }
 
 main()

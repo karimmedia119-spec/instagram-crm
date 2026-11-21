@@ -1,19 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyMetaConnection } from "@/lib/metaApi";
+import { getTenantWorkspaceId } from "@/lib/auth";
+import { generateSecureToken } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    let config = await prisma.webhookConfig.findFirst();
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    let config = await prisma.webhookConfig.findFirst({
+      where: { userId: workspaceId },
+    });
 
     if (!config) {
       config = await prisma.webhookConfig.create({
         data: {
-          verifyToken: "ig_crm_secret_token_2026",
+          userId: workspaceId,
+          verifyToken: generateSecureToken(24),
           appSecret: "",
-          businessAccountId: "17841405391088219",
+          businessAccountId: "",
           pageAccessToken: "",
           subscriptions: JSON.stringify([
             "messages",
@@ -49,8 +59,15 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
+    const workspaceId = await getTenantWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
-    let config = await prisma.webhookConfig.findFirst();
+    let config = await prisma.webhookConfig.findFirst({
+      where: { userId: workspaceId },
+    });
 
     const dataToUpdate: any = {};
     if (body.verifyToken !== undefined) dataToUpdate.verifyToken = body.verifyToken;
@@ -66,7 +83,8 @@ export async function PUT(request: NextRequest) {
     if (!config) {
       config = await prisma.webhookConfig.create({
         data: {
-          verifyToken: body.verifyToken || "ig_crm_secret_token_2026",
+          userId: workspaceId,
+          verifyToken: body.verifyToken || generateSecureToken(24),
           ...dataToUpdate,
         },
       });

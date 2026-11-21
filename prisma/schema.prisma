@@ -8,26 +8,35 @@ generator client {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  email        String   @unique
-  passwordHash String
-  role         String   @default("ADMIN") // "ADMIN" | "AGENT"
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String           @id @default(cuid())
+  username       String           @unique
+  email          String           @unique
+  passwordHash   String
+  role           String           @default("ADMIN") // "ADMIN" | "AGENT"
+  adminId        String?          // Parent admin ID for multi-tenant team members
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  webhookConfig  WebhookConfig?
+  contacts       Contact[]
+  automations    AutomationRule[]
+  templates      Template[]
+  webhookLogs    WebhookLog[]
 }
 
 model PasswordResetCode {
   id        String   @id @default(cuid())
   email     String
   code      String
+  type      String   @default("RESET") // "RESET" | "REGISTRATION"
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
 
 model Contact {
   id             String         @id @default(cuid())
-  instagramId    String         @unique
+  userId         String         // The tenant admin who owns this contact
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  instagramId    String
   username       String
   fullName       String?
   avatarUrl      String?
@@ -42,6 +51,8 @@ model Contact {
   updatedAt      DateTime       @updatedAt
   conversations  Conversation[]
   notes          ContactNote[]
+
+  @@unique([userId, instagramId])
 }
 
 model Conversation {
@@ -87,6 +98,8 @@ model ContactNote {
 
 model AutomationRule {
   id           String   @id @default(cuid())
+  userId       String   // The tenant admin who owns this rule
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name         String
   triggerType  String   // "COMMENT_ANY" | "COMMENT_SPECIFIC_POST" | "DM_KEYWORD" | "STORY_MENTION"
   postId       String?
@@ -105,6 +118,8 @@ model AutomationRule {
 
 model Template {
   id        String   @id @default(cuid())
+  userId    String   // The tenant admin who owns this template
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   shortcut  String   // e.g. "/welcome", "/price"
   content   String
@@ -115,9 +130,11 @@ model Template {
 
 model WebhookConfig {
   id                 String   @id @default(cuid())
+  userId             String   @unique // The tenant admin who owns this Instagram webhook setup
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   verifyToken        String   @default("ig_crm_secret_token_2026")
   appSecret          String?  @default("")
-  businessAccountId  String?  @default("17841405391088219")
+  businessAccountId  String?  @default("")
   pageAccessToken    String?  @default("")
   subscriptions      String   @default("[\"messages\",\"messaging_postbacks\",\"comments\",\"live_comments\",\"mentions\",\"story_insights\"]")
   updatedAt          DateTime @updatedAt
@@ -125,6 +142,8 @@ model WebhookConfig {
 
 model WebhookLog {
   id         String   @id @default(cuid())
+  userId     String?  // Associated tenant admin
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   method     String   // "GET" | "POST"
   endpoint   String
   statusCode Int

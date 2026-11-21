@@ -13,18 +13,24 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  const config = await prisma.webhookConfig.findFirst();
-  const validToken = config?.verifyToken || process.env.META_VERIFY_TOKEN || "ig_crm_secret_token_2026";
+  // Check if token matches any tenant's verifyToken or default
+  const matchingConfig = await prisma.webhookConfig.findFirst({
+    where: { verifyToken: token || "" },
+  });
+
+  const isDefaultValid =
+    token === (process.env.META_VERIFY_TOKEN || "ig_crm_secret_token_2026");
 
   const headersObj: Record<string, string> = {};
   request.headers.forEach((v, k) => {
     headersObj[k] = v;
   });
 
-  if (mode === "subscribe" && token === validToken) {
+  if (mode === "subscribe" && (matchingConfig || isDefaultValid)) {
     const latencyMs = Date.now() - startTime;
     await prisma.webhookLog.create({
       data: {
+        userId: matchingConfig?.userId || null,
         method: "GET",
         endpoint: "/api/webhooks/instagram",
         statusCode: 200,
@@ -74,28 +80,6 @@ export async function POST(request: NextRequest) {
     headersObj[k] = v;
   });
 
-  const signatureHeader = request.headers.get("x-hub-signature-256");
-  const config = await prisma.webhookConfig.findFirst();
-
-  // Signature validation if secret is set
-  if (config?.appSecret && config.appSecret.trim() !== "") {
-    const isValid = verifyWebhookSignature(rawBody, signatureHeader, config.appSecret);
-    if (!isValid) {
-      await prisma.webhookLog.create({
-        data: {
-          method: "POST",
-          endpoint: "/api/webhooks/instagram",
-          statusCode: 401,
-          headers: JSON.stringify(headersObj),
-          payload: rawBody,
-          response: "Unauthorized: Invalid X-Hub-Signature-256",
-          latencyMs: Date.now() - startTime,
-        },
-      });
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
-  }
-
   let body: any;
   try {
     body = JSON.parse(rawBody);
@@ -103,11 +87,63 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  const signatureHeader = request.headers.get("x-hub-signature-256");
+
   let processedCount = 0;
   let lastMatchedRule: string | null = null;
+  let lastTenantUserId: string | null = null;
 
   if (body.object === "instagram" && Array.isArray(body.entry)) {
     for (const entry of body.entry) {
+      const businessAccountId = entry.id;
+
+      // Locate tenant WebhookConfig by businessAccountId, or fallback to first admin
+      let config = businessAccountId
+        ? await prisma.webhookConfig.findFirst({
+            where: { businessAccountId },
+          })
+        : null;
+
+      if (!config) {
+        config = await prisma.webhookConfig.findFirst();
+      }
+
+      // If still no config, find first admin user
+      let tenantUserId = config?.userId;
+      if (!tenantUserId) {
+        const firstUser = await prisma.user.findFirst({
+          where: { role: "ADMIN" },
+        });
+        tenantUserId = firstUser?.id;
+      }
+
+      if (!tenantUserId) {
+        console.warn("[Webhook] No tenant user found for incoming entry", entry.id);
+        continue;
+      }
+
+      lastTenantUserId = tenantUserId;
+
+      // Validate signature if tenant has an appSecret configured
+      if (config?.appSecret && config.appSecret.trim() !== "") {
+        const isValid = verifyWebhookSignature(rawBody, signatureHeader, config.appSecret);
+        if (!isValid) {
+          await prisma.webhookLog.create({
+            data: {
+              userId: tenantUserId,
+              method: "POST",
+              endpoint: "/api/webhooks/instagram",
+              statusCode: 401,
+              headers: JSON.stringify(headersObj),
+              payload: rawBody,
+              response: "Unauthorized: Invalid X-Hub-Signature-256",
+              latencyMs: Date.now() - startTime,
+            },
+          });
+          return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+        }
+      }
+
       // 1. Process Post Comments (entry.changes)
       if (Array.isArray(entry.changes)) {
         for (const change of entry.changes) {
@@ -121,14 +157,18 @@ export async function POST(request: NextRequest) {
             const postId = val.media?.id || "ig_post_general";
             const postCaption = val.media?.caption || "Instagram Post";
 
-            // Upsert contact
-            let contact = await prisma.contact.findUnique({
-              where: { instagramId: igUserId },
+            // Find or create contact scoped to this tenant
+            let contact = await prisma.contact.findFirst({
+              where: {
+                userId: tenantUserId,
+                instagramId: igUserId,
+              },
             });
 
             if (!contact) {
               contact = await prisma.contact.create({
                 data: {
+                  userId: tenantUserId,
                   instagramId: igUserId,
                   username,
                   fullName: username.replace(/[._]/g, " "),
@@ -181,7 +221,7 @@ export async function POST(request: NextRequest) {
               },
             });
 
-            // Evaluate Automation Rules
+            // Evaluate Automation Rules for this tenant
             const autoResult = await evaluateAutomationRules({
               eventType: "COMMENT",
               content: commentText,
@@ -211,13 +251,18 @@ export async function POST(request: NextRequest) {
             const isStoryMention = !!msgObj.reply_to?.story;
             const username = msgItem.sender?.username || `user_${senderId.slice(-4)}`;
 
-            let contact = await prisma.contact.findUnique({
-              where: { instagramId: senderId },
+            // Find or create contact scoped to this tenant
+            let contact = await prisma.contact.findFirst({
+              where: {
+                userId: tenantUserId,
+                instagramId: senderId,
+              },
             });
 
             if (!contact) {
               contact = await prisma.contact.create({
                 data: {
+                  userId: tenantUserId,
                   instagramId: senderId,
                   username,
                   fullName: username.replace(/[._]/g, " "),
@@ -269,7 +314,7 @@ export async function POST(request: NextRequest) {
               },
             });
 
-            // Evaluate Automation Rules
+            // Evaluate Automation Rules for this tenant
             const autoResult = await evaluateAutomationRules({
               eventType: isStoryMention ? "STORY_MENTION" : "DM",
               content: messageText,
@@ -297,6 +342,7 @@ export async function POST(request: NextRequest) {
 
   await prisma.webhookLog.create({
     data: {
+      userId: lastTenantUserId,
       method: "POST",
       endpoint: "/api/webhooks/instagram",
       statusCode: 200,
