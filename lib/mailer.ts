@@ -163,13 +163,13 @@ export async function sendAuthorizationEmail({
     }
   }
 
-  // Tier 2: Dispatch via SMTP if configured (e.g. Gmail SMTP)
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPort = Number(process.env.SMTP_PORT) || 587;
-  const smtpUser = process.env.SMTP_USER;
+  // Tier 2: Dispatch directly via Gmail SMTP / Custom SMTP
+  const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
+  const smtpPort = Number(process.env.SMTP_PORT) || 465;
+  const smtpUser = process.env.SMTP_USER || TARGET_ADMIN_EMAIL;
   const smtpPass = process.env.SMTP_PASS;
 
-  if (mode === "standalone" && smtpHost && smtpUser && smtpPass) {
+  if (mode === "standalone" && smtpPass) {
     try {
       const transporter = nodemailer.createTransport({
         host: smtpHost,
@@ -185,45 +185,10 @@ export async function sendAuthorizationEmail({
         html: emailHtml,
       });
 
-      console.log(`[MAILER] ${type} code sent via SMTP to ${targetEmail}`);
+      console.log(`[MAILER] ${type} code sent via Gmail SMTP to ${targetEmail}`);
       mode = "smtp";
     } catch (err) {
-      console.error("[MAILER ERROR] SMTP failed:", err);
-    }
-  }
-
-  // Tier 3: Direct Webhook Email Delivery (FormSubmit Relay to targetEmail)
-  if (mode === "standalone") {
-    try {
-      const fsRes = await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Origin: "https://instagram-crm-pink.vercel.app",
-          Referer: "https://instagram-crm-pink.vercel.app/",
-        },
-        body: JSON.stringify({
-          _subject: `[${code}] ${subjectTitle}`,
-          _captcha: "false",
-          _template: "box",
-          Security_Code: code,
-          Email: targetEmail,
-          Expires_In: "15 minutes",
-          Action: type === "REGISTRATION" ? "Create New CRM Account" : "Reset Admin Password",
-          Message: `Your verification code is ${code}. Please enter it on the website to authorize this action.`,
-        }),
-      });
-
-      const fsData = await fsRes.json().catch(() => ({}));
-      if (fsData.success === "true" || fsData.success === true) {
-        console.log(`[MAILER] FormSubmit delivery succeeded to ${targetEmail}`);
-        mode = "formsubmit";
-      } else {
-        console.log(`[MAILER] FormSubmit note:`, fsData.message);
-      }
-    } catch (fsErr) {
-      console.warn("[MAILER] FormSubmit dispatch error:", fsErr);
+      console.error("[MAILER ERROR] Gmail SMTP failed:", err);
     }
   }
 
