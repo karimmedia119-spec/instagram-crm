@@ -1,0 +1,137 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         String   @default("ADMIN") // "ADMIN" | "AGENT"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PasswordResetCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Contact {
+  id             String         @id @default(cuid())
+  instagramId    String         @unique
+  username       String
+  fullName       String?
+  avatarUrl      String?
+  bio            String?
+  followerCount  Int            @default(0)
+  email          String?
+  phone          String?
+  pipelineStage  String         @default("NEW_LEAD")
+  tags           String         @default("[]")
+  isOnline       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  conversations  Conversation[]
+  notes          ContactNote[]
+}
+
+model Conversation {
+  id             String         @id @default(cuid())
+  contactId      String
+  contact        Contact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type           String         // "DM" | "POST_COMMENT"
+  status         String         @default("OPEN")
+  postId         String?
+  postCaption    String?
+  postMediaUrl   String?
+  lastMessageAt  DateTime       @default(now())
+  unreadCount    Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  messages       Message[]
+}
+
+model Message {
+  id                 String       @id @default(cuid())
+  conversationId     String
+  conversation       Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderType         String       // "CUSTOMER" | "AGENT" | "AUTOMATION"
+  content            String
+  mediaUrl           String?
+  storyReplyContext  String?
+  isPublicComment    Boolean      @default(false)
+  commentId          String?
+  parentCommentId    String?
+  isLiked            Boolean      @default(false)
+  isHidden           Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+}
+
+model ContactNote {
+  id         String   @id @default(cuid())
+  contactId  String
+  contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  author     String   @default("Agent")
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model AutomationRule {
+  id           String   @id @default(cuid())
+  name         String
+  triggerType  String   // "COMMENT_ANY" | "COMMENT_SPECIFIC_POST" | "DM_KEYWORD" | "STORY_MENTION"
+  postId       String?
+  matchType    String   @default("CONTAINS_ANY")
+  keywords     String
+  publicReply  String?
+  privateReply String?
+  ctaUrl       String?
+  ctaTitle     String?
+  applyTag     String?
+  isActive     Boolean  @default(true)
+  triggerCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  title     String
+  shortcut  String
+  content   String
+  category  String   @default("GENERAL")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WebhookConfig {
+  id                 String   @id @default(cuid())
+  verifyToken        String   @default("ig_crm_secret_token_2026")
+  appSecret          String?  @default("")
+  businessAccountId  String?  @default("17841405391088219")
+  pageAccessToken    String?  @default("")
+  subscriptions      String   @default("[\"messages\",\"messaging_postbacks\",\"comments\",\"live_comments\",\"mentions\",\"story_insights\"]")
+  updatedAt          DateTime @updatedAt
+}
+
+model WebhookLog {
+  id         String   @id @default(cuid())
+  method     String   // "GET" | "POST"
+  endpoint   String
+  statusCode Int
+  headers    String?
+  payload    String
+  response   String?
+  latencyMs  Int
+  createdAt  DateTime @default(now())
+}
