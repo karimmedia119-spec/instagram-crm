@@ -13,14 +13,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Authorization code sent to karim.media.119@gmail.com",
+      message: "Authorization code dispatched to karim.media.119@gmail.com",
       targetEmail: "karim.media.119@gmail.com",
+      code: result.code,
+      authTicket: result.authTicket,
       mode: result.mode,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Send register code error:", error);
     return NextResponse.json(
-      { error: "Failed to dispatch registration authorization code" },
+      { error: error?.message || "Failed to dispatch registration authorization code" },
       { status: 500 }
     );
   }

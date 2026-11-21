@@ -1,0 +1,31 @@
+import fs from "fs";
+import zlib from "zlib";
+import path from "path";
+
+const COMPRESSED_STARTER_DB_B64 = "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";
+
+export function ensureStarterDatabase(targetPath: string): void {
+  try {
+    if (fs.existsSync(targetPath) && fs.statSync(targetPath).size > 1000) {
+      return;
+    }
+    const parentDir = path.dirname(targetPath);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+    const candidates = [
+      path.join(process.cwd(), "prisma", "starter.db"),
+      path.join(process.cwd(), "prisma", "dev.db"),
+    ];
+    for (const src of candidates) {
+      if (fs.existsSync(src) && fs.statSync(src).size > 1000) {
+        fs.copyFileSync(src, targetPath);
+        return;
+      }
+    }
+    const buffer = zlib.gunzipSync(Buffer.from(COMPRESSED_STARTER_DB_B64, "base64"));
+    fs.writeFileSync(targetPath, buffer);
+  } catch (err) {
+    console.error("Error in ensureStarterDatabase:", err);
+  }
+}

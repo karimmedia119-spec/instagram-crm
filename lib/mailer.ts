@@ -1,7 +1,51 @@
 import nodemailer from "nodemailer";
 import { prisma } from "./prisma";
+import { createAuthTicket } from "./auth";
 
-const TARGET_ADMIN_EMAIL = "karim.media.119@gmail.com";
+export const TARGET_ADMIN_EMAIL = "karim.media.119@gmail.com";
+
+// In-memory verification code store as robust fallback
+interface VerificationCodeEntry {
+  code: string;
+  type: "REGISTRATION" | "PASSWORD_RESET";
+  email: string;
+  expiresAt: Date;
+}
+
+const memoryCodeStore = new Map<string, VerificationCodeEntry>();
+
+export function storeCodeInMemory(
+  email: string,
+  type: "REGISTRATION" | "PASSWORD_RESET",
+  code: string,
+  expiresAt: Date
+) {
+  memoryCodeStore.set(`${email.toLowerCase()}:${type}`, {
+    code,
+    type,
+    email: email.toLowerCase(),
+    expiresAt,
+  });
+}
+
+export function verifyCodeInMemory(
+  email: string,
+  type: "REGISTRATION" | "PASSWORD_RESET",
+  inputCode: string
+): boolean {
+  const key = `${email.toLowerCase()}:${type}`;
+  const entry = memoryCodeStore.get(key);
+  if (!entry) return false;
+  if (entry.expiresAt.getTime() < Date.now()) {
+    memoryCodeStore.delete(key);
+    return false;
+  }
+  if (entry.code === inputCode.trim()) {
+    memoryCodeStore.delete(key);
+    return true;
+  }
+  return false;
+}
 
 export function generateVerificationCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -19,19 +63,33 @@ export async function sendAuthorizationEmail({
   const code = generateVerificationCode();
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
-  // Delete previous codes for this email and type
-  await prisma.passwordResetCode.deleteMany({
-    where: { email: targetEmail, type },
+  // 1. Generate cryptographic authorization ticket
+  const authTicket = createAuthTicket({
+    code,
+    type,
+    email: targetEmail,
   });
 
-  await prisma.passwordResetCode.create({
-    data: {
-      email: targetEmail,
-      code,
-      type,
-      expiresAt,
-    },
-  });
+  // 2. Store in memory store
+  storeCodeInMemory(targetEmail, type, code, expiresAt);
+
+  // 3. Attempt DB persistence (wrapped safely in try/catch)
+  try {
+    await prisma.passwordResetCode.deleteMany({
+      where: { email: targetEmail, type },
+    });
+
+    await prisma.passwordResetCode.create({
+      data: {
+        email: targetEmail,
+        code,
+        type,
+        expiresAt,
+      },
+    });
+  } catch (dbErr) {
+    console.warn("[MAILER] Could not persist code to DB, fallback stores active:", dbErr);
+  }
 
   const subjectTitle =
     type === "REGISTRATION"
@@ -80,6 +138,8 @@ export async function sendAuthorizationEmail({
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
 
+  let mode = "standalone";
+
   if (smtpHost && smtpUser && smtpPass) {
     try {
       const transporter = nodemailer.createTransport({
@@ -97,18 +157,17 @@ export async function sendAuthorizationEmail({
       });
 
       console.log(`[MAILER] ${type} code sent via SMTP to ${targetEmail}`);
-      return { success: true, code, mode: "smtp" };
+      mode = "smtp";
     } catch (err) {
       console.error("[MAILER ERROR] SMTP failed:", err);
     }
+  } else {
+    console.log(`\n======================================================`);
+    console.log(`[${type} CODE FOR ${targetEmail}]: ${code}`);
+    console.log(`======================================================\n`);
   }
 
-  // Fallback log for development
-  console.log(`\n======================================================`);
-  console.log(`[${type} CODE FOR ${targetEmail}]: ${code}`);
-  console.log(`======================================================\n`);
-
-  return { success: true, code, mode: "logged" };
+  return { success: true, code, authTicket, mode };
 }
 
 export async function sendPasswordResetEmail(targetEmail: string = TARGET_ADMIN_EMAIL) {

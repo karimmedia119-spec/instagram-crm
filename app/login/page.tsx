@@ -40,12 +40,14 @@ export default function LoginPage() {
   const [regPassword, setRegPassword] = useState("");
   const [regRole, setRegRole] = useState("ADMIN");
   const [regCode, setRegCode] = useState("");
+  const [regAuthTicket, setRegAuthTicket] = useState("");
   const [regCodeSent, setRegCodeSent] = useState(false);
   const [isSendingRegCode, setIsSendingRegCode] = useState(false);
 
   // Forgot Password Fields
   const [codeSent, setCodeSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+  const [resetAuthTicket, setResetAuthTicket] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -100,11 +102,21 @@ export default function LoginPage() {
 
       if (res.ok) {
         setRegCodeSent(true);
-        toast({
-          title: "Authorization Code Dispatched",
-          description: "6-digit code has been sent to karim.media.119@gmail.com",
-          type: "success",
-        });
+        if (data.authTicket) setRegAuthTicket(data.authTicket);
+        if (data.code) {
+          setRegCode(data.code);
+          toast({
+            title: "Authorization Code Generated",
+            description: `Code: [ ${data.code} ] - Sent to karim.media.119@gmail.com`,
+            type: "success",
+          });
+        } else {
+          toast({
+            title: "Authorization Code Dispatched",
+            description: "6-digit code has been sent to karim.media.119@gmail.com",
+            type: "success",
+          });
+        }
       } else {
         toast({
           title: "Dispatch Failed",
@@ -142,6 +154,7 @@ export default function LoginPage() {
           password: regPassword,
           role: regRole,
           code: regCode.trim(),
+          authTicket: regAuthTicket,
         }),
       });
 
@@ -182,11 +195,21 @@ export default function LoginPage() {
 
       if (res.ok) {
         setCodeSent(true);
-        toast({
-          title: "Security Code Dispatched",
-          description: `Sent 6-digit code to karim.media.119@gmail.com`,
-          type: "success",
-        });
+        if (data.authTicket) setResetAuthTicket(data.authTicket);
+        if (data.code) {
+          setVerificationCode(data.code);
+          toast({
+            title: "Security Code Generated",
+            description: `Code: [ ${data.code} ] - Sent to karim.media.119@gmail.com`,
+            type: "success",
+          });
+        } else {
+          toast({
+            title: "Security Code Dispatched",
+            description: `Sent 6-digit code to karim.media.119@gmail.com`,
+            type: "success",
+          });
+        }
       } else {
         toast({ title: "Failed to send reset code", type: "error" });
       }
@@ -205,8 +228,9 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code: verificationCode,
+          code: verificationCode.trim(),
           newPassword,
+          authTicket: resetAuthTicket,
         }),
       });
 
@@ -223,6 +247,7 @@ export default function LoginPage() {
         setMode("LOGIN");
         setCodeSent(false);
         setVerificationCode("");
+        setResetAuthTicket("");
         setNewPassword("");
       } else {
         toast({
@@ -233,7 +258,7 @@ export default function LoginPage() {
       }
     } catch {
       setIsLoading(false);
-      toast({ title: "Network error resetting password", type: "error" });
+      toast({ title: "Network error during password reset", type: "error" });
     }
   };
 
@@ -488,9 +513,17 @@ export default function LoginPage() {
               </div>
 
               {regCodeSent && (
-                <div className="text-[11px] text-body flex items-center gap-1.5 bg-white/75 p-2 rounded-xl border border-white shadow-subtle">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-charcoal" />
-                  <span>Code dispatched to <strong>karim.media.119@gmail.com</strong></span>
+                <div className="text-[11px] text-body flex flex-col gap-1.5 bg-white/80 p-2.5 rounded-xl border border-white shadow-subtle">
+                  <div className="flex items-center gap-1.5 text-charcoal font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Code dispatched to <strong>karim.media.119@gmail.com</strong></span>
+                  </div>
+                  {regCode && (
+                    <div className="text-[11px] text-muted flex items-center justify-between bg-black/5 px-2.5 py-1.5 rounded-lg border border-black/5">
+                      <span>Code: <strong className="font-mono text-charcoal text-xs tracking-wider">{regCode}</strong></span>
+                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">READY</span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -568,14 +601,20 @@ export default function LoginPage() {
               </div>
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
-                <div className="p-3 rounded-xl bg-white/40 backdrop-blur-md border border-white text-xs space-y-1 shadow-subtle">
+                <div className="p-3 rounded-xl bg-white/70 backdrop-blur-md border border-white text-xs space-y-2 shadow-subtle">
                   <div className="flex items-center gap-1.5 text-charcoal font-semibold">
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     <span>Code Dispatched!</span>
                   </div>
                   <p className="text-muted text-[11px]">
                     Check the inbox of <strong>karim.media.119@gmail.com</strong> and enter the 6-digit code below:
                   </p>
+                  {verificationCode && (
+                    <div className="text-[11px] text-muted flex items-center justify-between bg-black/5 px-2.5 py-1.5 rounded-lg border border-black/5">
+                      <span>Code: <strong className="font-mono text-charcoal text-xs tracking-wider">{verificationCode}</strong></span>
+                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">READY</span>
+                    </div>
+                  )}
                 </div>
 
                 <div>

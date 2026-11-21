@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword, createSessionToken, getSessionUser, COOKIE_NAME } from "@/lib/auth";
+import { hashPassword, createSessionToken, getSessionUser, verifyAuthTicket, COOKIE_NAME } from "@/lib/auth";
 import { generateSecureToken } from "@/lib/utils";
+import { verifyCodeInMemory, TARGET_ADMIN_EMAIL } from "@/lib/mailer";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, email, password, role = "ADMIN", code } = await request.json();
+    const { username, email, password, role = "ADMIN", code, authTicket } = await request.json();
 
     if (!username || !email || !password) {
       return NextResponse.json(
@@ -23,31 +24,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify 6-digit code sent to karim.media.119@gmail.com
-    const validCode = await prisma.passwordResetCode.findFirst({
-      where: {
-        email: "karim.media.119@gmail.com",
-        type: "REGISTRATION",
-        code: code.trim(),
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const cleanCode = code.trim();
+    let isCodeValid = false;
 
-    if (!validCode) {
+    // 1. Verify via cryptographic authTicket if provided
+    if (authTicket) {
+      const ticketPayload = verifyAuthTicket(authTicket);
+      if (
+        ticketPayload &&
+        ticketPayload.type === "REGISTRATION" &&
+        ticketPayload.code === cleanCode
+      ) {
+        isCodeValid = true;
+      }
+    }
+
+    // 2. Verify via in-memory code store
+    if (!isCodeValid && verifyCodeInMemory(TARGET_ADMIN_EMAIL, "REGISTRATION", cleanCode)) {
+      isCodeValid = true;
+    }
+
+    // 3. Verify via database record
+    if (!isCodeValid) {
+      try {
+        const validCode = await prisma.passwordResetCode.findFirst({
+          where: {
+            email: TARGET_ADMIN_EMAIL,
+            type: "REGISTRATION",
+            code: cleanCode,
+            expiresAt: { gt: new Date() },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (validCode) {
+          isCodeValid = true;
+          // Clean up database code
+          await prisma.passwordResetCode.deleteMany({
+            where: {
+              email: TARGET_ADMIN_EMAIL,
+              type: "REGISTRATION",
+            },
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.warn("DB code verification check error:", err);
+      }
+    }
+
+    if (!isCodeValid) {
       return NextResponse.json(
         { error: "Invalid or expired authorization code. Check karim.media.119@gmail.com" },
         { status: 403 }
       );
     }
-
-    // Delete used code
-    await prisma.passwordResetCode.deleteMany({
-      where: {
-        email: "karim.media.119@gmail.com",
-        type: "REGISTRATION",
-      },
-    });
 
     // Check duplicate username or email
     const existing = await prisma.user.findFirst({

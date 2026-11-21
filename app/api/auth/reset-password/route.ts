@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, verifyAuthTicket } from "@/lib/auth";
+import { verifyCodeInMemory, TARGET_ADMIN_EMAIL } from "@/lib/mailer";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const { code, newPassword } = await request.json();
+    const { code, newPassword, authTicket } = await request.json();
 
     if (!code || !newPassword) {
       return NextResponse.json(
@@ -22,15 +23,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const resetRecord = await prisma.passwordResetCode.findFirst({
-      where: {
-        code: code.trim(),
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const cleanCode = code.trim();
+    let isCodeValid = false;
 
-    if (!resetRecord) {
+    // 1. Verify via cryptographic authTicket if provided
+    if (authTicket) {
+      const ticketPayload = verifyAuthTicket(authTicket);
+      if (
+        ticketPayload &&
+        ticketPayload.type === "PASSWORD_RESET" &&
+        ticketPayload.code === cleanCode
+      ) {
+        isCodeValid = true;
+      }
+    }
+
+    // 2. Verify via in-memory store
+    if (!isCodeValid && verifyCodeInMemory(TARGET_ADMIN_EMAIL, "PASSWORD_RESET", cleanCode)) {
+      isCodeValid = true;
+    }
+
+    // 3. Verify via database record
+    if (!isCodeValid) {
+      try {
+        const resetRecord = await prisma.passwordResetCode.findFirst({
+          where: {
+            code: cleanCode,
+            expiresAt: { gt: new Date() },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (resetRecord) {
+          isCodeValid = true;
+          await prisma.passwordResetCode.deleteMany({
+            where: { email: resetRecord.email },
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.warn("DB reset code lookup error:", err);
+      }
+    }
+
+    if (!isCodeValid) {
       return NextResponse.json(
         { error: "Invalid or expired verification code" },
         { status: 400 }
@@ -43,7 +78,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: resetRecord.email },
+          { email: TARGET_ADMIN_EMAIL },
           { username: "admin" },
         ],
       },
@@ -55,11 +90,6 @@ export async function POST(request: NextRequest) {
         data: { passwordHash: newHash },
       });
     }
-
-    // Clean up used code
-    await prisma.passwordResetCode.deleteMany({
-      where: { email: resetRecord.email },
-    });
 
     return NextResponse.json({
       success: true,

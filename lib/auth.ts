@@ -68,6 +68,60 @@ export function verifySessionToken(token: string): UserSessionPayload | null {
   }
 }
 
+export interface AuthTicketPayload {
+  code: string;
+  type: "REGISTRATION" | "PASSWORD_RESET";
+  email: string;
+  exp: number;
+}
+
+export function createAuthTicket(
+  payload: { code: string; type: "REGISTRATION" | "PASSWORD_RESET"; email: string },
+  expiresInMinutes = 15
+): string {
+  const exp = Math.floor(Date.now() / 1000) + expiresInMinutes * 60;
+  const data = JSON.stringify({ ...payload, exp });
+  const base64Data = Buffer.from(data).toString("base64url");
+  const signature = crypto
+    .createHmac("sha256", JWT_SECRET)
+    .update(base64Data)
+    .digest("base64url");
+  return `${base64Data}.${signature}`;
+}
+
+export function verifyAuthTicket(token: string): AuthTicketPayload | null {
+  try {
+    const [base64Data, signature] = token.split(".");
+    if (!base64Data || !signature) return null;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", JWT_SECRET)
+      .update(base64Data)
+      .digest("base64url");
+
+    if (
+      !crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedSignature)
+      )
+    ) {
+      return null;
+    }
+
+    const payload: AuthTicketPayload = JSON.parse(
+      Buffer.from(base64Data, "base64url").toString("utf8")
+    );
+
+    if (payload.exp < Math.floor(Date.now() / 1000)) {
+      return null; // Expired
+    }
+
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export async function getSessionUser() {
   const cookieStore = cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
