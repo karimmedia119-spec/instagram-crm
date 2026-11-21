@@ -134,7 +134,7 @@ export async function sendAuthorizationEmail({
 
   let mode = "standalone";
 
-  // 1. Attempt dispatch via Resend HTTP API (Fastest & Native for Vercel)
+  // Tier 1: Dispatch via Resend HTTP API if key is present
   if (process.env.RESEND_API_KEY) {
     try {
       const resendRes = await fetch("https://api.resend.com/emails", {
@@ -156,14 +156,14 @@ export async function sendAuthorizationEmail({
         mode = "resend";
       } else {
         const errText = await resendRes.text();
-        console.warn("[MAILER] Resend API error:", errText);
+        console.warn("[MAILER] Resend API note:", errText);
       }
     } catch (resendErr) {
       console.warn("[MAILER] Resend dispatch error:", resendErr);
     }
   }
 
-  // 2. Attempt dispatch via SMTP if Resend is not configured
+  // Tier 2: Dispatch via SMTP if configured (e.g. Gmail SMTP)
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = Number(process.env.SMTP_PORT) || 587;
   const smtpUser = process.env.SMTP_USER;
@@ -192,11 +192,44 @@ export async function sendAuthorizationEmail({
     }
   }
 
+  // Tier 3: Direct Webhook Email Delivery (FormSubmit Relay to targetEmail)
   if (mode === "standalone") {
-    console.log(`\n======================================================`);
-    console.log(`[${type} CODE FOR ${targetEmail}]: ${code}`);
-    console.log(`======================================================\n`);
+    try {
+      const fsRes = await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Origin: "https://instagram-crm-pink.vercel.app",
+          Referer: "https://instagram-crm-pink.vercel.app/",
+        },
+        body: JSON.stringify({
+          _subject: `[${code}] ${subjectTitle}`,
+          _captcha: "false",
+          _template: "box",
+          Security_Code: code,
+          Email: targetEmail,
+          Expires_In: "15 minutes",
+          Action: type === "REGISTRATION" ? "Create New CRM Account" : "Reset Admin Password",
+          Message: `Your verification code is ${code}. Please enter it on the website to authorize this action.`,
+        }),
+      });
+
+      const fsData = await fsRes.json().catch(() => ({}));
+      if (fsData.success === "true" || fsData.success === true) {
+        console.log(`[MAILER] FormSubmit delivery succeeded to ${targetEmail}`);
+        mode = "formsubmit";
+      } else {
+        console.log(`[MAILER] FormSubmit note:`, fsData.message);
+      }
+    } catch (fsErr) {
+      console.warn("[MAILER] FormSubmit dispatch error:", fsErr);
+    }
   }
+
+  console.log(`\n======================================================`);
+  console.log(`[${type} CODE FOR ${targetEmail}]: ${code} (Mode: ${mode})`);
+  console.log(`======================================================\n`);
 
   return { success: true, code, authTicket, mode };
 }
