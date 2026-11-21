@@ -12,11 +12,10 @@ import {
   ShieldCheck,
   RefreshCw,
   KeyRound,
-  Sparkles,
   CheckCircle2,
-  AlertCircle,
   ChevronLeft,
   Send,
+  Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
@@ -239,36 +238,45 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas flex flex-col justify-center items-center p-4">
-      {/* Brand Header */}
-      <div className="text-center mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-charcoal text-white flex items-center justify-center font-bold text-sm mx-auto mb-3 shadow-lift">
-          IG
+    <div className="min-h-screen flex flex-col justify-center items-center p-4 relative">
+      {/* 3D Floating Glass Brand Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="text-center mb-7 relative z-10"
+      >
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-[#242730] to-[#121418] text-white flex items-center justify-center font-bold text-sm mx-auto mb-3.5 shadow-[0_14px_30px_-6px_rgba(24,26,31,0.35),inset_0_1px_1px_rgba(255,255,255,0.4)] border border-white/20 transition-transform duration-300 hover:scale-105 cursor-pointer">
+          <span className="tracking-widest">IG</span>
         </div>
         <h1 className="text-xl font-bold tracking-tight text-charcoal">
           Atelier Instagram CRM
         </h1>
-        <p className="text-xs text-muted mt-1">
-          Enterprise Monochromatic Workspace & Social Lead Engine
+        <p className="text-xs text-muted mt-1 font-medium tracking-wide">
+          Ultra-Glass 3D Luxury Social Automation Engine
         </p>
-      </div>
+      </motion.div>
 
-      {/* Main Card Container */}
+      {/* Main 3D Floating Glass Card */}
       <motion.div
         layout
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
-        className="w-full max-w-md bg-surface border border-borderline rounded-2xl shadow-lift p-8 relative overflow-hidden"
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md glass-panel rounded-3xl p-8 relative overflow-hidden z-10"
       >
+        {/* Specular Ambient Glow inside Glass */}
+        <div className="absolute -top-24 -left-24 w-52 h-52 rounded-full bg-white/45 blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-52 h-52 rounded-full bg-slate-300/30 blur-2xl pointer-events-none" />
+
         {/* Tab Switcher: Login vs Add New Account */}
         {mode !== "FORGOT_PASSWORD" && (
-          <div className="flex items-center gap-1 p-1 bg-canvas rounded-xl border border-borderline mb-6 text-xs font-medium">
+          <div className="flex items-center gap-1 p-1 bg-white/40 backdrop-blur-md rounded-2xl border border-white/70 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] mb-6 text-xs font-medium">
             <button
               onClick={() => setMode("LOGIN")}
-              className={`flex-1 py-2 rounded-lg transition-all ${
+              className={`flex-1 py-2.5 rounded-xl transition-all duration-200 ${
                 mode === "LOGIN"
-                  ? "bg-surface text-charcoal font-semibold shadow-subtle"
+                  ? "bg-white/95 text-charcoal font-semibold shadow-[0_4px_14px_rgba(24,26,31,0.06),inset_0_1px_1px_rgba(255,255,255,1)] border border-white"
                   : "text-muted hover:text-charcoal"
               }`}
             >
@@ -276,9 +284,9 @@ export default function LoginPage() {
             </button>
             <button
               onClick={() => setMode("REGISTER")}
-              className={`flex-1 py-2 rounded-lg transition-all ${
+              className={`flex-1 py-2.5 rounded-xl transition-all duration-200 ${
                 mode === "REGISTER"
-                  ? "bg-surface text-charcoal font-semibold shadow-subtle"
+                  ? "bg-white/95 text-charcoal font-semibold shadow-[0_4px_14px_rgba(24,26,31,0.06),inset_0_1px_1px_rgba(255,255,255,1)] border border-white"
                   : "text-muted hover:text-charcoal"
               }`}
             >
@@ -304,7 +312,7 @@ export default function LoginPage() {
                   value={usernameOrEmail}
                   onChange={(e) => setUsernameOrEmail(e.target.value)}
                   placeholder="Enter username or email"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-borderline bg-canvas/30 text-xs text-charcoal focus:outline-none focus:border-charcoal transition-colors font-mono"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all font-mono"
                 />
               </div>
             </div>
@@ -317,7 +325,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setMode("FORGOT_PASSWORD")}
-                  className="text-[11px] text-body hover:text-charcoal underline"
+                  className="text-[11px] text-body hover:text-charcoal underline transition-colors"
                 >
                   Forgot Password? (نسيت كلمة المرور)
                 </button>
@@ -330,12 +338,12 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-borderline bg-canvas/30 text-xs text-charcoal focus:outline-none focus:border-charcoal transition-colors font-mono"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -349,7 +357,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 transition-all shadow-subtle flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+              className="w-full py-3.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50 mt-3"
             >
               {isLoading ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -368,8 +376,8 @@ export default function LoginPage() {
            ========================================================================= */}
         {mode === "REGISTER" && (
           <form onSubmit={handleRegister} className="space-y-4">
-            {/* Security Notice Box */}
-            <div className="p-3.5 rounded-xl bg-canvas border border-borderline text-xs space-y-1.5">
+            {/* 3D Glass Security Notice Box */}
+            <div className="p-3.5 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_4px_14px_rgba(24,26,31,0.02)] text-xs space-y-1.5">
               <div className="flex items-center gap-2 text-charcoal font-semibold">
                 <ShieldCheck className="w-4 h-4 text-charcoal" />
                 <span>Security Authorization Required</span>
@@ -392,7 +400,7 @@ export default function LoginPage() {
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value)}
                   placeholder="e.g. omar_sales"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-borderline bg-canvas/30 text-xs text-charcoal focus:outline-none focus:border-charcoal transition-colors font-mono"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all font-mono"
                 />
               </div>
             </div>
@@ -409,7 +417,7 @@ export default function LoginPage() {
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="agent@atelier.luxury"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-borderline bg-canvas/30 text-xs text-charcoal focus:outline-none focus:border-charcoal transition-colors font-mono"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all font-mono"
                 />
               </div>
             </div>
@@ -427,7 +435,7 @@ export default function LoginPage() {
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-borderline bg-canvas/30 text-xs text-charcoal focus:outline-none focus:border-charcoal transition-colors font-mono"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all font-mono"
                 />
                 <button
                   type="button"
@@ -450,15 +458,15 @@ export default function LoginPage() {
               <select
                 value={regRole}
                 onChange={(e) => setRegRole(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-borderline bg-surface text-xs text-charcoal focus:outline-none focus:border-charcoal"
+                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none bg-white/70"
               >
                 <option value="ADMIN">Administrator (Independent System / مساحة عمل مستقلة)</option>
                 <option value="AGENT">CRM Agent (Team Member / عضو فريق)</option>
               </select>
             </div>
 
-            {/* Verification Code Dispatch & Input Section */}
-            <div className="p-3.5 rounded-xl border border-borderline bg-canvas/40 space-y-3">
+            {/* 3D Glass Verification Box */}
+            <div className="p-3.5 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_4px_14px_rgba(24,26,31,0.02)] space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-charcoal flex items-center gap-1.5">
                   <KeyRound className="w-3.5 h-3.5 text-charcoal" />
@@ -468,7 +476,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleSendRegistrationCode}
                   disabled={isSendingRegCode}
-                  className="text-[11px] font-medium text-charcoal underline hover:opacity-80 flex items-center gap-1 disabled:opacity-50"
+                  className="text-[11px] font-semibold text-charcoal underline hover:opacity-80 flex items-center gap-1 disabled:opacity-50"
                 >
                   {isSendingRegCode ? (
                     <RefreshCw className="w-3 h-3 animate-spin" />
@@ -480,7 +488,7 @@ export default function LoginPage() {
               </div>
 
               {regCodeSent && (
-                <div className="text-[11px] text-body flex items-center gap-1.5 bg-surface p-2 rounded-lg border border-borderline">
+                <div className="text-[11px] text-body flex items-center gap-1.5 bg-white/75 p-2 rounded-xl border border-white shadow-subtle">
                   <CheckCircle2 className="w-3.5 h-3.5 text-charcoal" />
                   <span>Code dispatched to <strong>karim.media.119@gmail.com</strong></span>
                 </div>
@@ -493,14 +501,14 @@ export default function LoginPage() {
                 value={regCode}
                 onChange={(e) => setRegCode(e.target.value)}
                 placeholder="Enter 6-digit code (e.g. 849201)"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-borderline bg-surface text-sm text-charcoal text-center tracking-widest font-mono font-bold focus:outline-none focus:border-charcoal"
+                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-charcoal text-center tracking-widest font-mono font-bold focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 transition-all shadow-subtle flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+              className="w-full py-3.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50 mt-3"
             >
               {isLoading ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -524,7 +532,7 @@ export default function LoginPage() {
                 setMode("LOGIN");
                 setCodeSent(false);
               }}
-              className="inline-flex items-center gap-1 text-xs text-muted hover:text-charcoal font-medium mb-1"
+              className="inline-flex items-center gap-1 text-xs text-muted hover:text-charcoal font-medium mb-1 transition-colors"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>Back to Sign In</span>
@@ -546,7 +554,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleSendResetCode}
                   disabled={isLoading}
-                  className="w-full py-3 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 transition-all shadow-subtle flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isLoading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -560,7 +568,7 @@ export default function LoginPage() {
               </div>
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
-                <div className="p-3 rounded-xl bg-canvas border border-borderline text-xs space-y-1">
+                <div className="p-3 rounded-xl bg-white/40 backdrop-blur-md border border-white text-xs space-y-1 shadow-subtle">
                   <div className="flex items-center gap-1.5 text-charcoal font-semibold">
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Code Dispatched!</span>
@@ -581,7 +589,7 @@ export default function LoginPage() {
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value)}
                     placeholder="123456"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline bg-canvas/30 text-sm text-charcoal text-center tracking-widest font-mono font-bold focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-charcoal text-center tracking-widest font-mono font-bold focus:outline-none"
                   />
                 </div>
 
@@ -596,14 +604,14 @@ export default function LoginPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline bg-canvas/30 text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 transition-all shadow-subtle flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isLoading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />

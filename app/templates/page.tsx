@@ -173,7 +173,7 @@ export default function TemplatesPage() {
 
         <button
           onClick={openCreateModal}
-          className="px-4 py-2 rounded-xl bg-charcoal text-white hover:bg-charcoal/90 text-xs font-medium flex items-center gap-2 shadow-subtle transition-all active:scale-[0.98]"
+          className="px-4 py-2.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center gap-2 transition-all active:scale-[0.98]"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>New Quick Reply</span>
@@ -190,20 +190,20 @@ export default function TemplatesPage() {
             placeholder="Search templates by title, shortcut, text..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 rounded-xl border border-borderline bg-surface text-xs text-charcoal focus:outline-none focus:border-charcoal transition-colors"
+            className="w-full pl-8 pr-3 py-2 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all"
           />
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-xl transition-all font-medium ${
+              className={`px-3.5 py-1.5 rounded-xl transition-all font-medium ${
                 selectedCategory === cat
-                  ? "bg-charcoal text-white shadow-subtle"
-                  : "bg-surface text-body border border-borderline hover:text-charcoal"
+                  ? "bg-charcoal text-white shadow-sm font-semibold"
+                  : "glass-pill text-body hover:text-charcoal"
               }`}
             >
               {cat}
@@ -218,12 +218,12 @@ export default function TemplatesPage() {
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="h-44 rounded-2xl bg-surface border border-borderline animate-pulse"
+              className="h-44 rounded-3xl glass-card animate-pulse"
             />
           ))}
         </div>
       ) : filteredTemplates.length === 0 ? (
-        <div className="p-12 text-center bg-surface border border-borderline rounded-2xl">
+        <div className="p-12 text-center glass-panel border border-white/80 rounded-3xl">
           <MessageSquareText className="w-8 h-8 text-muted mx-auto mb-3" />
           <p className="text-sm font-semibold text-charcoal">No templates found</p>
           <p className="text-xs text-muted mt-1">
@@ -231,20 +231,18 @@ export default function TemplatesPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredTemplates.map((tpl) => (
             <motion.div
               key={tpl.id}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.2 }}
-              className="p-5 rounded-2xl bg-surface border border-borderline shadow-subtle hover:shadow-ambient flex flex-col justify-between transition-all group"
+              className="p-6 rounded-3xl glass-card border border-white/80 shadow-[0_16px_36px_-12px_rgba(24,26,31,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] flex flex-col justify-between transition-all group"
             >
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className="font-semibold text-charcoal text-xs">
                     {tpl.title}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md bg-subtle border border-borderline font-mono text-[10px] text-charcoal font-semibold shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-lg glass-pill font-mono text-[10px] text-charcoal font-semibold shrink-0">
                     {tpl.shortcut}
                   </span>
                 </div>
@@ -254,7 +252,7 @@ export default function TemplatesPage() {
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-borderline flex items-center justify-between text-xs">
+              <div className="mt-4 pt-3 border-t border-white/60 flex items-center justify-between text-xs">
                 <span className="text-[10px] uppercase font-semibold tracking-wider text-muted">
                   {tpl.category}
                 </span>
@@ -262,21 +260,21 @@ export default function TemplatesPage() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleCopyContent(tpl.content)}
-                    className="p-1.5 text-muted hover:text-charcoal rounded-lg hover:bg-subtle transition-colors"
+                    className="p-1.5 text-muted hover:text-charcoal rounded-xl hover:bg-white/80 transition-colors"
                     title="Copy Text"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => openEditModal(tpl)}
-                    className="p-1.5 text-muted hover:text-charcoal rounded-lg hover:bg-subtle transition-colors"
+                    className="p-1.5 text-muted hover:text-charcoal rounded-xl hover:bg-white/80 transition-colors"
                     title="Edit"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDelete(tpl.id, tpl.title)}
-                    className="p-1.5 text-muted hover:text-charcoal rounded-lg hover:bg-subtle transition-colors"
+                    className="p-1.5 text-muted hover:text-charcoal rounded-xl hover:bg-white/80 transition-colors"
                     title="Delete"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -297,22 +295,22 @@ export default function TemplatesPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="fixed inset-0 bg-charcoal/30 backdrop-blur-[2px] z-40 transition-opacity"
+              className="fixed inset-0 bg-charcoal/25 backdrop-blur-sm z-40 transition-opacity"
             />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-lg bg-surface border border-borderline rounded-2xl shadow-lift overflow-hidden"
+              className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-lg glass-panel rounded-3xl shadow-[0_25px_60px_-15px_rgba(24,26,31,0.25),inset_0_1px_2px_rgba(255,255,255,0.95)] overflow-hidden"
             >
-              <div className="px-6 py-4 border-b border-borderline flex items-center justify-between bg-canvas/40">
+              <div className="px-6 py-4 border-b border-white/60 flex items-center justify-between bg-white/30 backdrop-blur-md">
                 <h3 className="text-sm font-semibold text-charcoal">
                   {editingTemplate ? "Edit Quick Reply" : "New Quick Reply Template"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="text-muted hover:text-charcoal"
+                  className="text-muted hover:text-charcoal p-1 rounded-lg hover:bg-white/80 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -329,7 +327,7 @@ export default function TemplatesPage() {
                     value={formTitle}
                     onChange={(e) => setFormTitle(e.target.value)}
                     placeholder="e.g. Standard Greeting (Bilingual)"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none"
                   />
                 </div>
 
@@ -344,7 +342,7 @@ export default function TemplatesPage() {
                       value={formShortcut}
                       onChange={(e) => setFormShortcut(e.target.value)}
                       placeholder="/welcome"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none font-mono"
                     />
                   </div>
 
@@ -355,7 +353,7 @@ export default function TemplatesPage() {
                     <select
                       value={formCategory}
                       onChange={(e) => setFormCategory(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal bg-surface"
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none bg-white/70"
                     >
                       <option value="GREETING">GREETING</option>
                       <option value="PRICING">PRICING</option>
@@ -378,7 +376,7 @@ export default function TemplatesPage() {
                           key={v}
                           type="button"
                           onClick={() => handleInsertVariable(v)}
-                          className="px-1.5 py-0.5 rounded bg-subtle hover:bg-borderline text-charcoal font-mono text-[10px]"
+                          className="px-2 py-0.5 rounded-lg glass-pill text-charcoal font-mono text-[10px]"
                         >
                           {v}
                         </button>
@@ -391,22 +389,22 @@ export default function TemplatesPage() {
                     value={formContent}
                     onChange={(e) => setFormContent(e.target.value)}
                     placeholder="Type template message..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal font-arabic"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none font-arabic resize-none"
                   />
                 </div>
 
-                <div className="pt-4 border-t border-borderline flex items-center justify-end gap-3">
+                <div className="pt-4 border-t border-white/60 flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-body hover:bg-subtle transition-colors"
+                    className="px-4 py-2 rounded-xl glass-pill text-xs font-medium text-body hover:text-charcoal transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-5 py-2 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 transition-all shadow-subtle flex items-center gap-2"
+                    className="px-5 py-2.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center gap-2"
                   >
                     {isSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                     <span>{editingTemplate ? "Save Changes" : "Create Template"}</span>

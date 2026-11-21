@@ -211,7 +211,7 @@ export default function AutomationsPage() {
 
         <button
           onClick={openCreateModal}
-          className="px-4 py-2 rounded-xl bg-charcoal text-white hover:bg-charcoal/90 text-xs font-medium flex items-center gap-2 shadow-subtle transition-all active:scale-[0.98]"
+          className="px-4 py-2.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center gap-2 transition-all active:scale-[0.98]"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Create Automation Rule</span>
@@ -224,12 +224,12 @@ export default function AutomationsPage() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-60 rounded-2xl bg-surface border border-borderline animate-pulse"
+              className="h-60 rounded-3xl glass-card animate-pulse"
             />
           ))}
         </div>
       ) : rules.length === 0 ? (
-        <div className="p-12 text-center bg-surface border border-borderline rounded-2xl">
+        <div className="p-12 text-center glass-panel border border-white/80 rounded-3xl">
           <Zap className="w-8 h-8 text-muted mx-auto mb-3" />
           <p className="text-sm font-semibold text-charcoal">No automation rules yet</p>
           <p className="text-xs text-muted mt-1">
@@ -237,7 +237,7 @@ export default function AutomationsPage() {
           </p>
           <button
             onClick={openCreateModal}
-            className="mt-4 px-4 py-2 bg-charcoal text-white text-xs font-semibold rounded-xl"
+            className="mt-4 px-4 py-2 glass-button-primary text-white text-xs font-semibold rounded-xl"
           >
             Create Rule
           </button>
@@ -247,17 +247,15 @@ export default function AutomationsPage() {
           {rules.map((rule) => (
             <motion.div
               key={rule.id}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.2 }}
-              className={`p-6 rounded-2xl bg-surface border transition-all flex flex-col justify-between shadow-subtle hover:shadow-ambient relative ${
-                rule.isActive ? "border-borderline" : "border-borderline/60 opacity-70"
+              className={`p-6 rounded-3xl glass-card border transition-all flex flex-col justify-between relative ${
+                rule.isActive ? "border-white/80" : "border-white/50 opacity-70"
               }`}
             >
               <div>
                 {/* Card Top Row */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-charcoal text-white flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-2xl bg-gradient-to-b from-[#242730] to-[#14161A] text-white flex items-center justify-center shrink-0 shadow-sm border border-white/20">
                       {rule.triggerType.includes("COMMENT") ? (
                         <MessageSquare className="w-4 h-4" />
                       ) : rule.triggerType === "STORY_MENTION" ? (
@@ -283,11 +281,11 @@ export default function AutomationsPage() {
                   <button
                     onClick={() => handleToggleActive(rule)}
                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      rule.isActive ? "bg-charcoal" : "bg-borderline"
+                      rule.isActive ? "bg-charcoal" : "bg-slate-300"
                     }`}
                   >
                     <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-surface shadow-subtle ring-0 transition duration-200 ease-in-out ${
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
                         rule.isActive ? "translate-x-4" : "translate-x-0"
                       }`}
                     />
@@ -299,13 +297,13 @@ export default function AutomationsPage() {
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted block">
                     Matching Keywords ({rule.matchType.replace(/_/g, " ")})
                   </span>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {rule.keywords
                       .split(",")
                       .map((k, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-0.5 rounded-md bg-subtle text-charcoal text-[11px] font-mono border border-borderline font-arabic"
+                          className="px-2.5 py-0.5 rounded-full glass-pill text-charcoal text-[11px] font-mono font-arabic"
                         >
                           {k.trim()}
                         </span>
@@ -314,9 +312,9 @@ export default function AutomationsPage() {
                 </div>
 
                 {/* Response Action Summary */}
-                <div className="space-y-2 pt-2 border-t border-borderline text-xs">
+                <div className="space-y-2 pt-2 border-t border-white/60 text-xs">
                   {rule.publicReply && (
-                    <div className="p-2.5 rounded-xl bg-canvas/60 border border-borderline">
+                    <div className="p-3 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]">
                       <span className="text-[10px] font-semibold text-muted uppercase tracking-wider block mb-0.5">
                         1. Public Comment Reply
                       </span>
@@ -327,7 +325,7 @@ export default function AutomationsPage() {
                   )}
 
                   {rule.privateReply && (
-                    <div className="p-2.5 rounded-xl bg-canvas/60 border border-borderline">
+                    <div className="p-3 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]">
                       <span className="text-[10px] font-semibold text-muted uppercase tracking-wider block mb-0.5">
                         2. Automated Private DM
                       </span>
@@ -356,7 +354,7 @@ export default function AutomationsPage() {
               </div>
 
               {/* Card Footer: Trigger stats & Edit/Delete */}
-              <div className="mt-5 pt-3 border-t border-borderline flex items-center justify-between text-xs">
+              <div className="mt-5 pt-3 border-t border-white/60 flex items-center justify-between text-xs">
                 <span className="text-muted font-mono">
                   <strong className="text-charcoal font-semibold">
                     {rule.triggerCount}
@@ -367,14 +365,14 @@ export default function AutomationsPage() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => openEditModal(rule)}
-                    className="p-1.5 text-muted hover:text-charcoal rounded-lg hover:bg-subtle transition-colors"
+                    className="p-1.5 text-muted hover:text-charcoal rounded-xl hover:bg-white/80 transition-colors"
                     title="Edit Rule"
                   >
                     <Edit className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDeleteRule(rule.id, rule.name)}
-                    className="p-1.5 text-muted hover:text-charcoal rounded-lg hover:bg-subtle transition-colors"
+                    className="p-1.5 text-muted hover:text-charcoal rounded-xl hover:bg-white/80 transition-colors"
                     title="Delete Rule"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -395,23 +393,23 @@ export default function AutomationsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="fixed inset-0 bg-charcoal/30 backdrop-blur-[2px] z-40 transition-opacity"
+              className="fixed inset-0 bg-charcoal/25 backdrop-blur-sm z-40 transition-opacity"
             />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="fixed inset-x-4 top-[5%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-2xl bg-surface border border-borderline rounded-2xl shadow-lift max-h-[90vh] flex flex-col overflow-hidden"
+              className="fixed inset-x-4 top-[5%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-2xl glass-panel rounded-3xl shadow-[0_25px_60px_-15px_rgba(24,26,31,0.25),inset_0_1px_2px_rgba(255,255,255,0.95)] max-h-[90vh] flex flex-col overflow-hidden"
             >
               {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-borderline flex items-center justify-between bg-canvas/40">
+              <div className="px-6 py-4 border-b border-white/60 flex items-center justify-between bg-white/30 backdrop-blur-md">
                 <h3 className="text-sm font-semibold text-charcoal">
                   {editingRule ? "Edit Automation Workflow" : "Create Automation Workflow"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="text-muted hover:text-charcoal"
+                  className="text-muted hover:text-charcoal p-1 rounded-lg hover:bg-white/80 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -432,7 +430,7 @@ export default function AutomationsPage() {
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="e.g. Price Inquiry Auto-DM & Reply"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none"
                   />
                 </div>
 
@@ -445,7 +443,7 @@ export default function AutomationsPage() {
                     <select
                       value={formTriggerType}
                       onChange={(e: any) => setFormTriggerType(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal bg-surface"
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none bg-white/70"
                     >
                       <option value="COMMENT_ANY">Comment on Any Post</option>
                       <option value="COMMENT_SPECIFIC_POST">Comment on Specific Post</option>
@@ -461,7 +459,7 @@ export default function AutomationsPage() {
                     <select
                       value={formMatchType}
                       onChange={(e: any) => setFormMatchType(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal bg-surface"
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none bg-white/70"
                     >
                       <option value="CONTAINS_ANY">Contains Any Keyword</option>
                       <option value="EXACT">Exact Match Only</option>
@@ -481,7 +479,7 @@ export default function AutomationsPage() {
                       value={formPostId}
                       onChange={(e) => setFormPostId(e.target.value)}
                       placeholder="e.g. ig_post_984210"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none font-mono"
                     />
                   </div>
                 )}
@@ -497,7 +495,7 @@ export default function AutomationsPage() {
                     value={formKeywords}
                     onChange={(e) => setFormKeywords(e.target.value)}
                     placeholder="price, cost, كم السعر, سعر, بكم"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal font-arabic"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none font-arabic"
                   />
                 </div>
 
@@ -511,10 +509,10 @@ export default function AutomationsPage() {
                     value={formPublicReply}
                     onChange={(e) => setFormPublicReply(e.target.value)}
                     placeholder="Hello @{{username}}, we just sent you a private DM!&#10;مرحباً @{{username}}! تم إرسال كافة التفاصيل عبر رسالة خاصة."
-                    className="w-full px-3.5 py-2 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal font-arabic"
+                    className="w-full px-3.5 py-2 rounded-xl glass-input text-xs text-charcoal focus:outline-none font-arabic resize-none"
                   />
                   <span className="text-[10px] text-muted block mt-1">
-                    Multiple lines rotate randomly to avoid repetitive spam flags. Supports variables: <code className="bg-subtle px-1 py-0.5 rounded">{"{{username}}"}</code>
+                    Multiple lines rotate randomly to avoid repetitive spam flags. Supports variables: <code className="bg-white/60 px-1 py-0.5 rounded">{"{{username}}"}</code>
                   </span>
                 </div>
 
@@ -529,29 +527,29 @@ export default function AutomationsPage() {
                       value={formPrivateReply}
                       onChange={(e) => setFormPrivateReply(e.target.value)}
                       placeholder="Hello {{username}}, thank you for reaching out..."
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal font-arabic"
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none font-arabic resize-none"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-muted block mb-1">CTA Button Title</label>
+                      <label className="text-muted block mb-1 text-[11px]">CTA Button Title</label>
                       <input
                         type="text"
                         value={formCtaTitle}
                         onChange={(e) => setFormCtaTitle(e.target.value)}
                         placeholder="e.g. View Price Sheet"
-                        className="w-full px-3 py-2 rounded-lg border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal"
+                        className="w-full px-3 py-2 rounded-xl glass-input text-xs text-charcoal focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-muted block mb-1">CTA Target URL</label>
+                      <label className="text-muted block mb-1 text-[11px]">CTA Target URL</label>
                       <input
                         type="url"
                         value={formCtaUrl}
                         onChange={(e) => setFormCtaUrl(e.target.value)}
                         placeholder="https://..."
-                        className="w-full px-3 py-2 rounded-lg border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal"
+                        className="w-full px-3 py-2 rounded-xl glass-input text-xs text-charcoal focus:outline-none"
                       />
                     </div>
                   </div>
@@ -567,22 +565,22 @@ export default function AutomationsPage() {
                     value={formApplyTag}
                     onChange={(e) => setFormApplyTag(e.target.value)}
                     placeholder="e.g. Inquiry, VIP, Wholesale"
-                    className="w-full px-3.5 py-2 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2 rounded-xl glass-input text-xs text-charcoal focus:outline-none"
                   />
                 </div>
 
-                <div className="pt-4 border-t border-borderline flex items-center justify-end gap-3">
+                <div className="pt-4 border-t border-white/60 flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-body hover:bg-subtle transition-colors"
+                    className="px-4 py-2 rounded-xl glass-pill text-xs font-medium text-body hover:text-charcoal transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-5 py-2 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 transition-all shadow-subtle flex items-center gap-2"
+                    className="px-5 py-2 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center gap-2"
                   >
                     {isSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                     <span>{editingRule ? "Save Changes" : "Create Rule"}</span>

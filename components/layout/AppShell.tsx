@@ -225,14 +225,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-canvas text-charcoal flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-borderline bg-surface flex flex-col justify-between shrink-0 h-screen sticky top-0 z-30">
+    <div className="min-h-screen text-charcoal flex relative">
+      {/* 3D Glass Sidebar */}
+      <aside className="w-64 glass-panel border-r border-white/80 flex flex-col justify-between shrink-0 h-screen sticky top-0 z-30 shadow-[4px_0_30px_rgba(24,26,31,0.03)]">
         <div>
           {/* Brand Header */}
-          <div className="h-16 px-6 flex items-center justify-between border-b border-borderline">
+          <div className="h-16 px-6 flex items-center justify-between border-b border-white/60">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-charcoal text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-subtle">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-[#242730] to-[#121418] text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-[0_4px_12px_rgba(24,26,31,0.25),inset_0_1px_0_rgba(255,255,255,0.4)] border border-white/20">
                 IG
               </div>
               <div>
@@ -240,17 +240,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   Atelier CRM
                 </span>
                 <span className="text-[10px] text-muted tracking-wider uppercase font-medium mt-0.5 block">
-                  Instagram Studio
+                  Ultra-Glass 3D
                 </span>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-subtle text-[10px] font-medium text-body border border-borderline">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full glass-pill text-[10px] font-semibold text-charcoal">
               Production
             </span>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-1">
+          <nav className="p-3 space-y-1.5">
             {navItems.map((item) => {
               const isActive =
                 item.href === "/"
@@ -262,16 +262,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group ${
+                  className={`relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 group ${
                     isActive
-                      ? "text-charcoal font-semibold bg-subtle"
-                      : "text-body hover:text-charcoal hover:bg-subtle/50"
+                      ? "text-charcoal font-semibold bg-white/90 shadow-[0_4px_16px_rgba(24,26,31,0.05),inset_0_1px_1px_rgba(255,255,255,1)] border border-white/95"
+                      : "text-body hover:text-charcoal hover:bg-white/50 border border-transparent"
                   }`}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="sidebar-active"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-charcoal"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-charcoal shadow-sm"
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   )}
@@ -286,7 +286,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </div>
 
                   {item.href === "/inbox" && unreadTotal > 0 && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-charcoal text-white">
+                    <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-charcoal text-white shadow-sm">
                       {unreadTotal}
                     </span>
                   )}
@@ -297,12 +297,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Sidebar Footer: User Account & Security Controls */}
-        <div className="p-4 border-t border-borderline space-y-3 bg-canvas/30">
+        <div className="p-4 border-t border-white/60 space-y-3 bg-white/20">
           {/* Active Admin Profile */}
-          <div className="p-3 rounded-xl bg-surface border border-borderline space-y-2">
+          <div className="p-3.5 rounded-2xl glass-card space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-charcoal text-white flex items-center justify-center text-xs font-semibold">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-b from-[#242730] to-[#121418] text-white flex items-center justify-center text-xs font-semibold shadow-sm border border-white/20">
                   {currentUser?.username?.charAt(0).toUpperCase() || "A"}
                 </div>
                 <div className="min-w-0">
@@ -318,20 +318,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 onClick={handleLogout}
                 title="Sign Out"
-                className="text-muted hover:text-charcoal p-1 rounded-lg hover:bg-subtle transition-colors"
+                className="text-muted hover:text-charcoal p-1.5 rounded-lg hover:bg-white/80 transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {/* Quick Actions (Change Password / Add Account) */}
-            <div className="pt-2 border-t border-borderline flex items-center justify-between text-[11px]">
+            <div className="pt-2.5 border-t border-borderline/60 flex items-center justify-between text-[11px]">
               <button
                 onClick={() => setIsPasswordModalOpen(true)}
                 className="text-muted hover:text-charcoal flex items-center gap-1 font-medium transition-colors"
               >
                 <KeyRound className="w-3 h-3" />
-                <span>Change Password</span>
+                <span>Password</span>
               </button>
 
               <button
@@ -339,7 +339,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="text-muted hover:text-charcoal flex items-center gap-1 font-medium transition-colors"
               >
                 <UserPlus className="w-3 h-3" />
-                <span>Add Account</span>
+                <span>Add User</span>
               </button>
             </div>
           </div>
@@ -347,9 +347,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Top Header */}
-        <header className="h-16 border-b border-borderline bg-surface/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-20">
+        <header className="h-16 border-b border-white/70 bg-white/50 backdrop-blur-2xl px-8 flex items-center justify-between sticky top-0 z-20 shadow-[0_4px_20px_-10px_rgba(24,26,31,0.03)]">
           <div className="flex items-center gap-3">
             <h1 className="text-sm font-semibold text-charcoal capitalize">
               {pathname === "/"
@@ -361,7 +361,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsNewAccountModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl border border-borderline hover:bg-subtle text-xs font-medium text-charcoal flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-1.5 rounded-xl glass-pill text-xs font-medium text-charcoal flex items-center gap-1.5 transition-all hover:scale-102"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>Add Account (إضافة حساب)</span>
@@ -369,7 +369,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <button
               onClick={() => setIsPasswordModalOpen(true)}
-              className="px-3.5 py-1.5 rounded-xl bg-charcoal text-white hover:bg-charcoal/90 text-xs font-medium flex items-center gap-1.5 shadow-subtle transition-all active:scale-[0.98]"
+              className="px-4 py-1.5 rounded-xl glass-button-primary text-white text-xs font-medium flex items-center gap-1.5 transition-all"
             >
               <KeyRound className="w-3.5 h-3.5" />
               <span>Change Password</span>
@@ -392,21 +392,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsPasswordModalOpen(false)}
-              className="fixed inset-0 bg-charcoal/30 backdrop-blur-[2px] z-40"
+              className="fixed inset-0 bg-charcoal/25 backdrop-blur-sm z-40"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="fixed inset-x-4 top-[15%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-md bg-surface border border-borderline rounded-2xl shadow-lift overflow-hidden"
+              className="fixed inset-x-4 top-[15%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-md glass-panel rounded-3xl shadow-[0_25px_60px_-15px_rgba(24,26,31,0.25),inset_0_1px_2px_rgba(255,255,255,0.95)] overflow-hidden"
             >
-              <div className="px-6 py-4 border-b border-borderline flex items-center justify-between bg-canvas/40">
+              <div className="px-6 py-4 border-b border-white/60 flex items-center justify-between bg-white/30">
                 <h3 className="text-sm font-semibold text-charcoal">
                   Change Password (تغيير كلمة المرور)
                 </h3>
                 <button
                   onClick={() => setIsPasswordModalOpen(false)}
-                  className="text-muted hover:text-charcoal"
+                  className="text-muted hover:text-charcoal p-1 rounded-lg hover:bg-white/80 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -414,7 +414,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
               <form onSubmit={handleChangePassword} className="p-6 space-y-4 text-xs">
                 <div>
-                  <label className="font-semibold text-charcoal block mb-1">
+                  <label className="font-semibold text-charcoal block mb-1.5">
                     Current Password
                   </label>
                   <input
@@ -423,12 +423,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-charcoal block mb-1">
+                  <label className="font-semibold text-charcoal block mb-1.5">
                     New Password
                   </label>
                   <input
@@ -438,22 +438,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
                   />
                 </div>
 
-                <div className="pt-3 border-t border-borderline flex items-center justify-end gap-3">
+                <div className="pt-3 border-t border-white/60 flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setIsPasswordModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-body hover:bg-subtle"
+                    className="px-4 py-2 rounded-xl glass-pill text-xs font-medium text-body hover:text-charcoal"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isChangingPassword}
-                    className="px-5 py-2 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 flex items-center gap-2"
+                    className="px-5 py-2.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center gap-2"
                   >
                     {isChangingPassword && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                     <span>Update Password</span>
@@ -476,21 +476,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsNewAccountModalOpen(false)}
-              className="fixed inset-0 bg-charcoal/30 backdrop-blur-[2px] z-40"
+              className="fixed inset-0 bg-charcoal/25 backdrop-blur-sm z-40"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-md bg-surface border border-borderline rounded-2xl shadow-lift overflow-hidden"
+              className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-md glass-panel rounded-3xl shadow-[0_25px_60px_-15px_rgba(24,26,31,0.25),inset_0_1px_2px_rgba(255,255,255,0.95)] overflow-hidden"
             >
-              <div className="px-6 py-4 border-b border-borderline flex items-center justify-between bg-canvas/40">
+              <div className="px-6 py-4 border-b border-white/60 flex items-center justify-between bg-white/30">
                 <h3 className="text-sm font-semibold text-charcoal">
                   Add New Team Account (إضافة حساب جديد)
                 </h3>
                 <button
                   onClick={() => setIsNewAccountModalOpen(false)}
-                  className="text-muted hover:text-charcoal"
+                  className="text-muted hover:text-charcoal p-1 rounded-lg hover:bg-white/80 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -498,7 +498,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
               <form onSubmit={handleCreateNewAccount} className="p-6 space-y-4 text-xs">
                 <div>
-                  <label className="font-semibold text-charcoal block mb-1">
+                  <label className="font-semibold text-charcoal block mb-1.5">
                     Username
                   </label>
                   <input
@@ -507,12 +507,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
                     placeholder="e.g. omar_advisor"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-charcoal block mb-1">
+                  <label className="font-semibold text-charcoal block mb-1.5">
                     Email Address
                   </label>
                   <input
@@ -521,12 +521,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="omar@atelier.luxury"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-charcoal block mb-1">
+                  <label className="font-semibold text-charcoal block mb-1.5">
                     Initial Password
                   </label>
                   <input
@@ -536,18 +536,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     value={newAccPassword}
                     onChange={(e) => setNewAccPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-charcoal block mb-1">
+                  <label className="font-semibold text-charcoal block mb-1.5">
                     Role
                   </label>
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-borderline text-xs text-charcoal focus:outline-none focus:border-charcoal bg-surface"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none bg-white/70"
                   >
                     <option value="ADMIN">Administrator (Independent System / مساحة عمل مستقلة)</option>
                     <option value="AGENT">CRM Agent (Team Member / عضو فريق)</option>
@@ -555,7 +555,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
 
                 {/* Authorization Code from karim.media.119@gmail.com */}
-                <div className="p-3 rounded-xl border border-borderline bg-canvas/40 space-y-2.5">
+                <div className="p-3.5 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_4px_14px_rgba(24,26,31,0.02)] space-y-2.5">
                   <div className="flex items-center justify-between">
                     <label className="font-semibold text-charcoal flex items-center gap-1.5 text-[11px]">
                       <KeyRound className="w-3.5 h-3.5 text-charcoal" />
@@ -565,7 +565,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       type="button"
                       onClick={handleSendNewAccCode}
                       disabled={isSendingNewAccCode}
-                      className="text-[11px] font-medium text-charcoal underline hover:opacity-85 flex items-center gap-1 disabled:opacity-50"
+                      className="text-[11px] font-semibold text-charcoal underline hover:opacity-85 flex items-center gap-1 disabled:opacity-50"
                     >
                       {isSendingNewAccCode ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -577,7 +577,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </div>
 
                   {newAccCodeSent && (
-                    <div className="text-[10px] text-body flex items-center gap-1 bg-surface p-1.5 rounded-lg border border-borderline">
+                    <div className="text-[10px] text-body flex items-center gap-1 bg-white/80 p-1.5 rounded-xl border border-white">
                       <CheckCircle2 className="w-3 h-3 text-charcoal" />
                       <span>Code sent to karim.media.119@gmail.com</span>
                     </div>
@@ -590,22 +590,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     value={newAccCode}
                     onChange={(e) => setNewAccCode(e.target.value)}
                     placeholder="Enter 6-digit code"
-                    className="w-full px-3 py-2 rounded-xl border border-borderline text-xs text-charcoal font-mono font-bold tracking-widest text-center focus:outline-none focus:border-charcoal bg-surface"
+                    className="w-full px-3 py-2 rounded-xl glass-input text-xs text-charcoal font-mono font-bold tracking-widest text-center focus:outline-none"
                   />
                 </div>
 
-                <div className="pt-3 border-t border-borderline flex items-center justify-end gap-3">
+                <div className="pt-3 border-t border-white/60 flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setIsNewAccountModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-body hover:bg-subtle"
+                    className="px-4 py-2 rounded-xl glass-pill text-xs font-medium text-body hover:text-charcoal"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isCreatingAccount}
-                    className="px-5 py-2 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 flex items-center gap-2"
+                    className="px-5 py-2.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center gap-2"
                   >
                     {isCreatingAccount && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                     <span>Create User</span>

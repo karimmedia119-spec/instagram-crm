@@ -233,9 +233,9 @@ export default function WebhookSettingsPage() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* 1. Gateway Status Banner */}
-      <div className="p-6 rounded-2xl bg-surface border border-borderline shadow-subtle flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-7 rounded-3xl glass-panel border border-white/80 shadow-[0_16px_36px_-12px_rgba(24,26,31,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-charcoal text-white flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-[#242730] to-[#121418] text-white flex items-center justify-center shrink-0 shadow-sm border border-white/20">
             <ShieldCheck className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -243,8 +243,8 @@ export default function WebhookSettingsPage() {
               <h2 className="text-sm font-semibold text-charcoal">
                 Instagram Webhook Gateway
               </h2>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-subtle text-charcoal text-[11px] font-medium border border-borderline">
-                <span className="w-2 h-2 rounded-full bg-charcoal" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full glass-pill text-charcoal text-[11px] font-semibold">
+                <span className="w-2 h-2 rounded-full bg-charcoal shadow-sm" />
                 Production Live
               </span>
             </div>
@@ -257,7 +257,7 @@ export default function WebhookSettingsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={loadData}
-            className="px-3.5 py-2 rounded-xl border border-borderline hover:bg-subtle text-xs font-semibold text-charcoal flex items-center gap-2 transition-colors"
+            className="px-4 py-2 rounded-xl glass-pill hover:bg-white text-xs font-semibold text-charcoal flex items-center gap-2 transition-all"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Check Status</span>
@@ -268,8 +268,8 @@ export default function WebhookSettingsPage() {
       {/* 2 & 3. Webhook Credentials & Graph API Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Card 1: Webhook Endpoint Credentials */}
-        <div className="p-6 rounded-2xl bg-surface border border-borderline shadow-subtle space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-borderline">
+        <div className="p-7 rounded-3xl glass-card border border-white/80 shadow-[0_16px_36px_-12px_rgba(24,26,31,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/60">
             <Webhook className="w-4 h-4 text-charcoal" />
             <h3 className="text-xs font-semibold text-charcoal uppercase tracking-wider">
               Webhook Endpoint Credentials
@@ -286,12 +286,12 @@ export default function WebhookSettingsPage() {
                 type="text"
                 readOnly
                 value={callbackUrl}
-                className="flex-1 px-3 py-2 rounded-xl border border-borderline bg-canvas/60 text-xs text-charcoal font-mono select-all focus:outline-none"
+                className="flex-1 px-3 py-2 rounded-xl glass-input text-xs text-charcoal font-mono select-all focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => copyToClipboard(callbackUrl, "Callback URL")}
-                className="px-3 py-2 rounded-xl border border-borderline hover:bg-subtle text-xs font-medium text-charcoal transition-colors shrink-0"
+                className="px-3 py-2 rounded-xl glass-pill hover:bg-white text-xs font-medium text-charcoal transition-colors shrink-0"
               >
                 <Copy className="w-3.5 h-3.5" />
               </button>
@@ -317,12 +317,12 @@ export default function WebhookSettingsPage() {
                 type="text"
                 value={verifyToken}
                 onChange={(e) => setVerifyToken(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                className="flex-1 px-3 py-2 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => copyToClipboard(verifyToken, "Verify Token")}
-                className="px-3 py-2 rounded-xl border border-borderline hover:bg-subtle text-xs font-medium text-charcoal transition-colors shrink-0"
+                className="px-3 py-2 rounded-xl glass-pill hover:bg-white text-xs font-medium text-charcoal transition-colors shrink-0"
               >
                 <Copy className="w-3.5 h-3.5" />
               </button>
@@ -340,7 +340,7 @@ export default function WebhookSettingsPage() {
                 value={appSecret}
                 onChange={(e) => setAppSecret(e.target.value)}
                 placeholder="Enter Meta App Secret..."
-                className="w-full px-3 py-2 pr-10 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                className="w-full px-3 py-2 pr-10 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
               />
               <button
                 type="button"
@@ -358,8 +358,8 @@ export default function WebhookSettingsPage() {
         </div>
 
         {/* Card 2: Instagram Graph API Credentials */}
-        <div className="p-6 rounded-2xl bg-surface border border-borderline shadow-subtle space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-borderline">
+        <div className="p-7 rounded-3xl glass-card border border-white/80 shadow-[0_16px_36px_-12px_rgba(24,26,31,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/60">
             <Key className="w-4 h-4 text-charcoal" />
             <h3 className="text-xs font-semibold text-charcoal uppercase tracking-wider">
               Instagram Graph API Credentials
@@ -376,7 +376,7 @@ export default function WebhookSettingsPage() {
               value={businessAccountId}
               onChange={(e) => setBusinessAccountId(e.target.value)}
               placeholder="e.g. 17841405391088219"
-              className="w-full px-3 py-2 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+              className="w-full px-3 py-2 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
             />
           </div>
 
@@ -391,7 +391,7 @@ export default function WebhookSettingsPage() {
                 value={pageAccessToken}
                 onChange={(e) => setPageAccessToken(e.target.value)}
                 placeholder="EAAB..."
-                className="w-full px-3 py-2 pr-10 rounded-xl border border-borderline text-xs text-charcoal font-mono focus:outline-none focus:border-charcoal"
+                className="w-full px-3 py-2 pr-10 rounded-xl glass-input text-xs text-charcoal font-mono focus:outline-none"
               />
               <button
                 type="button"
@@ -413,7 +413,7 @@ export default function WebhookSettingsPage() {
               type="button"
               onClick={handleTestConnection}
               disabled={isTesting}
-              className="w-full py-2.5 rounded-xl border border-borderline bg-subtle hover:bg-borderline text-xs font-semibold text-charcoal transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl glass-pill hover:bg-white text-xs font-semibold text-charcoal transition-all flex items-center justify-center gap-2"
             >
               {isTesting ? (
                 <>
@@ -429,7 +429,7 @@ export default function WebhookSettingsPage() {
             </button>
 
             {testResult && (
-              <div className="mt-2 p-2.5 rounded-xl bg-canvas text-xs border border-borderline">
+              <div className="mt-2.5 p-3 rounded-2xl bg-white/50 backdrop-blur-md text-xs border border-white">
                 <span className="font-semibold text-charcoal">
                   Status: {testResult.status}
                 </span>
@@ -445,8 +445,8 @@ export default function WebhookSettingsPage() {
       </div>
 
       {/* 4. Webhook Event Subscriptions Card */}
-      <div className="p-6 rounded-2xl bg-surface border border-borderline shadow-subtle space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-borderline">
+      <div className="p-7 rounded-3xl glass-panel border border-white/80 shadow-[0_16px_36px_-12px_rgba(24,26,31,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-white/60">
           <div>
             <h3 className="text-xs font-semibold text-charcoal uppercase tracking-wider">
               Webhook Event Subscriptions
@@ -465,14 +465,14 @@ export default function WebhookSettingsPage() {
                 key={sub.key}
                 type="button"
                 onClick={() => handleToggleSubscription(sub.key)}
-                className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between ${
                   isSubscribed
-                    ? "border-charcoal bg-subtle/50"
-                    : "border-borderline hover:bg-subtle/20"
+                    ? "border-charcoal bg-white/90 shadow-sm"
+                    : "border-white/70 glass-card"
                 }`}
               >
                 <div>
-                  <span className="text-xs font-medium text-charcoal block">
+                  <span className="text-xs font-semibold text-charcoal block">
                     {sub.label}
                   </span>
                   <span className="text-[10px] font-mono text-muted">
@@ -482,7 +482,7 @@ export default function WebhookSettingsPage() {
                 <div
                   className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                     isSubscribed
-                      ? "border-charcoal bg-charcoal text-white"
+                      ? "border-charcoal bg-charcoal text-white shadow-sm"
                       : "border-borderline"
                   }`}
                 >
@@ -494,11 +494,11 @@ export default function WebhookSettingsPage() {
         </div>
 
         {/* Save Configuration Action Bar */}
-        <div className="pt-4 border-t border-borderline flex items-center justify-end">
+        <div className="pt-4 border-t border-white/60 flex items-center justify-end">
           <button
             onClick={handleSaveConfig}
             disabled={isSaving}
-            className="px-6 py-2.5 rounded-xl bg-charcoal text-white text-xs font-semibold hover:bg-charcoal/90 transition-all shadow-subtle flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center gap-2"
           >
             {isSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
             <span>Save Configuration</span>
@@ -507,8 +507,8 @@ export default function WebhookSettingsPage() {
       </div>
 
       {/* 5. Live Webhook Event Inspector Table */}
-      <div className="p-6 rounded-2xl bg-surface border border-borderline shadow-subtle space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-borderline">
+      <div className="p-7 rounded-3xl glass-panel border border-white/80 shadow-[0_16px_36px_-12px_rgba(24,26,31,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-white/60">
           <div className="flex items-center gap-2.5">
             <Terminal className="w-4 h-4 text-charcoal" />
             <div>
@@ -524,14 +524,14 @@ export default function WebhookSettingsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={loadData}
-              className="p-1.5 rounded-lg border border-borderline hover:bg-subtle text-muted hover:text-charcoal transition-colors"
+              className="p-1.5 rounded-xl glass-pill hover:bg-white text-muted hover:text-charcoal transition-colors"
               title="Refresh Logs"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleClearLogs}
-              className="p-1.5 rounded-lg border border-borderline hover:bg-subtle text-muted hover:text-charcoal transition-colors"
+              className="p-1.5 rounded-xl glass-pill hover:bg-white text-muted hover:text-charcoal transition-colors"
               title="Clear Logs"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -543,16 +543,16 @@ export default function WebhookSettingsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-borderline text-[10px] font-semibold text-muted uppercase tracking-wider">
-                <th className="py-2 px-3">Method</th>
-                <th className="py-2 px-3">Status</th>
-                <th className="py-2 px-3">Endpoint</th>
-                <th className="py-2 px-3">Latency</th>
-                <th className="py-2 px-3">Timestamp</th>
-                <th className="py-2 px-3 text-right">Payload</th>
+              <tr className="border-b border-white/60 text-[10px] font-semibold text-muted uppercase tracking-wider">
+                <th className="py-2.5 px-3">Method</th>
+                <th className="py-2.5 px-3">Status</th>
+                <th className="py-2.5 px-3">Endpoint</th>
+                <th className="py-2.5 px-3">Latency</th>
+                <th className="py-2.5 px-3">Timestamp</th>
+                <th className="py-2.5 px-3 text-right">Payload</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-borderline">
+            <tbody className="divide-y divide-white/60">
               {logs.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-muted">
@@ -561,13 +561,13 @@ export default function WebhookSettingsPage() {
                 </tr>
               ) : (
                 logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-subtle/40 transition-colors">
+                  <tr key={log.id} className="hover:bg-white/40 transition-colors">
                     <td className="py-3 px-3">
                       <span
-                        className={`px-2 py-0.5 rounded font-mono text-[10px] font-semibold ${
+                        className={`px-2 py-0.5 rounded-lg font-mono text-[10px] font-semibold ${
                           log.method === "POST"
-                            ? "bg-charcoal text-white"
-                            : "bg-subtle text-charcoal border border-borderline"
+                            ? "bg-charcoal text-white shadow-sm"
+                            : "glass-pill text-charcoal"
                         }`}
                       >
                         {log.method}
@@ -590,7 +590,7 @@ export default function WebhookSettingsPage() {
                     <td className="py-3 px-3 text-right">
                       <button
                         onClick={() => setSelectedLog(log)}
-                        className="px-2.5 py-1 rounded-lg border border-borderline hover:bg-subtle text-charcoal font-medium text-[11px] inline-flex items-center gap-1 transition-colors"
+                        className="px-3 py-1 rounded-xl glass-pill hover:bg-white text-charcoal font-medium text-[11px] inline-flex items-center gap-1 transition-colors"
                       >
                         <Code2 className="w-3 h-3" />
                         <span>Inspect JSON</span>
@@ -613,27 +613,27 @@ export default function WebhookSettingsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedLog(null)}
-              className="fixed inset-0 bg-charcoal/30 backdrop-blur-[2px] z-40 transition-opacity"
+              className="fixed inset-0 bg-charcoal/25 backdrop-blur-sm z-40 transition-opacity"
             />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-2xl bg-surface border border-borderline rounded-2xl shadow-lift overflow-hidden max-h-[80vh] flex flex-col"
+              className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50 w-full max-w-2xl glass-panel rounded-3xl shadow-[0_25px_60px_-15px_rgba(24,26,31,0.25),inset_0_1px_2px_rgba(255,255,255,0.95)] overflow-hidden max-h-[80vh] flex flex-col"
             >
-              <div className="px-6 py-4 border-b border-borderline flex items-center justify-between bg-canvas/40">
+              <div className="px-6 py-4 border-b border-white/60 flex items-center justify-between bg-white/30 backdrop-blur-md">
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-semibold text-charcoal text-xs">
                     {selectedLog.method} {selectedLog.endpoint}
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-charcoal text-white text-[10px] font-mono">
+                  <span className="px-2 py-0.5 rounded-lg bg-charcoal text-white text-[10px] font-mono shadow-sm">
                     {selectedLog.statusCode} OK
                   </span>
                 </div>
                 <button
                   onClick={() => setSelectedLog(null)}
-                  className="text-muted hover:text-charcoal"
+                  className="text-muted hover:text-charcoal p-1 rounded-lg hover:bg-white/80 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -644,7 +644,7 @@ export default function WebhookSettingsPage() {
                   <span className="font-semibold text-charcoal block mb-1">
                     Incoming Request Payload:
                   </span>
-                  <pre className="p-4 rounded-xl bg-canvas text-charcoal border border-borderline overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                  <pre className="p-4 rounded-2xl bg-white/50 backdrop-blur-md text-charcoal border border-white overflow-x-auto whitespace-pre-wrap leading-relaxed shadow-inner">
                     {(() => {
                       try {
                         return JSON.stringify(JSON.parse(selectedLog.payload), null, 2);
@@ -660,7 +660,7 @@ export default function WebhookSettingsPage() {
                     <span className="font-semibold text-charcoal block mb-1">
                       Handler Response:
                     </span>
-                    <pre className="p-4 rounded-xl bg-canvas text-charcoal border border-borderline overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                    <pre className="p-4 rounded-2xl bg-white/50 backdrop-blur-md text-charcoal border border-white overflow-x-auto whitespace-pre-wrap leading-relaxed shadow-inner">
                       {(() => {
                         try {
                           return JSON.stringify(JSON.parse(selectedLog.response), null, 2);

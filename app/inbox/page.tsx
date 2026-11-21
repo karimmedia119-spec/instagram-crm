@@ -462,13 +462,13 @@ function InboxContent() {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] -m-8 flex bg-surface overflow-hidden border-t border-borderline">
+    <div className="h-[calc(100vh-7.5rem)] flex glass-panel rounded-3xl overflow-hidden border border-white/80 shadow-[0_25px_50px_-12px_rgba(24,26,31,0.08),inset_0_1px_2px_rgba(255,255,255,0.95)]">
       {/* =========================================================================
           COLUMN 1: CONVERSATION QUEUE (LEFT)
          ========================================================================= */}
-      <div className="w-80 border-r border-borderline flex flex-col bg-surface shrink-0">
+      <div className="w-80 border-r border-white/70 flex flex-col bg-white/40 backdrop-blur-xl shrink-0">
         {/* Search & Filter Header */}
-        <div className="p-4 border-b border-borderline space-y-3 bg-canvas/30">
+        <div className="p-4 border-b border-white/60 space-y-3 bg-white/20">
           <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
@@ -476,7 +476,7 @@ function InboxContent() {
               placeholder="Search conversations, handles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-borderline bg-surface text-xs text-charcoal focus:outline-none focus:border-charcoal transition-colors"
+              className="w-full pl-8 pr-3 py-2 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all"
             />
           </div>
 
@@ -494,14 +494,14 @@ function InboxContent() {
                 <button
                   key={tab.id}
                   onClick={() => setFilter(tab.id)}
-                  className={`relative px-2.5 py-1 rounded-lg shrink-0 transition-all ${
+                  className={`relative px-2.5 py-1.5 rounded-xl shrink-0 transition-all ${
                     isSelected ? "text-charcoal font-semibold" : "hover:text-charcoal"
                   }`}
                 >
                   {isSelected && (
                     <motion.div
                       layoutId="queue-filter-pill"
-                      className="absolute inset-0 bg-subtle rounded-lg border border-borderline"
+                      className="absolute inset-0 bg-white/90 rounded-xl border border-white shadow-sm"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
@@ -533,13 +533,13 @@ function InboxContent() {
                   onClick={() => setActiveConversationId(item.id)}
                   className={`w-full text-left p-3.5 transition-all flex items-start gap-3 relative ${
                     isSelected
-                      ? "bg-subtle/70"
-                      : "hover:bg-subtle/30 bg-surface"
+                      ? "bg-white/80 shadow-[0_4px_16px_rgba(24,26,31,0.04),inset_0_1px_1px_rgba(255,255,255,1)] border-y border-white"
+                      : "hover:bg-white/40 border-y border-transparent"
                   }`}
                 >
                   {/* Left selection indicator */}
                   {isSelected && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-charcoal" />
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-charcoal rounded-r-full shadow-sm" />
                   )}
 
                   {/* Avatar + Badge */}
@@ -550,9 +550,9 @@ function InboxContent() {
                         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
                       }
                       alt={item.contact.username}
-                      className="w-10 h-10 rounded-full object-cover border border-borderline"
+                      className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
                     />
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-surface border border-borderline flex items-center justify-center text-charcoal">
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white/95 border border-white shadow-sm flex items-center justify-center text-charcoal">
                       {item.type === "DM" ? (
                         <MessageCircle className="w-2.5 h-2.5" />
                       ) : (
@@ -581,7 +581,7 @@ function InboxContent() {
                         {item.contact.tags?.slice(0, 2).map((tag, idx) => (
                           <span
                             key={idx}
-                            className="px-1.5 py-0.2 rounded bg-surface border border-borderline text-[9px] font-medium text-muted truncate"
+                            className="px-2 py-0.5 rounded-full glass-pill text-[9px] font-medium text-charcoal truncate"
                           >
                             {tag}
                           </span>
@@ -589,7 +589,7 @@ function InboxContent() {
                       </div>
 
                       {item.unreadCount > 0 && (
-                        <span className="w-2 h-2 rounded-full bg-charcoal shrink-0" />
+                        <span className="w-2 h-2 rounded-full bg-charcoal shrink-0 shadow-sm" />
                       )}
                     </div>
                   </div>
@@ -603,7 +603,7 @@ function InboxContent() {
       {/* =========================================================================
           COLUMN 2: ACTIVE THREAD & COMPOSER (MIDDLE)
          ========================================================================= */}
-      <div className="flex-1 flex flex-col min-w-0 bg-surface border-r border-borderline">
+      <div className="flex-1 flex flex-col min-w-0 bg-white/50 backdrop-blur-2xl border-r border-white/70">
         {isLoadingThread || !activeConversation ? (
           <div className="flex-1 flex items-center justify-center text-muted text-xs">
             <RefreshCw className="w-4 h-4 animate-spin mr-2" />
@@ -612,7 +612,7 @@ function InboxContent() {
         ) : (
           <>
             {/* Thread Header */}
-            <div className="h-16 px-6 border-b border-borderline flex items-center justify-between bg-surface">
+            <div className="h-16 px-6 border-b border-white/60 flex items-center justify-between bg-white/30 backdrop-blur-md">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img
@@ -621,10 +621,10 @@ function InboxContent() {
                       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
                     }
                     alt={activeConversation.contact.username}
-                    className="w-9 h-9 rounded-full object-cover border border-borderline"
+                    className="w-9 h-9 rounded-full object-cover border border-white shadow-sm"
                   />
                   {activeConversation.contact.isOnline && (
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-charcoal border-2 border-surface" />
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-charcoal border-2 border-white" />
                   )}
                 </div>
                 <div>
@@ -632,7 +632,7 @@ function InboxContent() {
                     <span className="text-sm font-semibold text-charcoal">
                       @{activeConversation.contact.username}
                     </span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-subtle text-body border border-borderline">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold glass-pill text-charcoal">
                       {activeConversation.type === "DM" ? "Direct Message" : "Post Comment"}
                     </span>
                   </div>
@@ -644,14 +644,14 @@ function InboxContent() {
 
               {/* Status Actions */}
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 p-1 bg-subtle rounded-xl border border-borderline text-xs font-medium">
+                <div className="flex items-center gap-1 p-1 bg-white/40 backdrop-blur-md rounded-2xl border border-white/70 text-xs font-medium">
                   {(["OPEN", "NEEDS_ATTENTION", "RESOLVED"] as const).map((st) => (
                     <button
                       key={st}
                       onClick={() => handleToggleStatus(st)}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
+                      className={`px-3 py-1 rounded-xl text-[11px] transition-all ${
                         activeConversation.status === st
-                          ? "bg-surface text-charcoal shadow-subtle font-semibold"
+                          ? "bg-white/95 text-charcoal shadow-sm font-semibold border border-white"
                           : "text-muted hover:text-charcoal"
                       }`}
                     >
@@ -664,13 +664,13 @@ function InboxContent() {
 
             {/* Context Card for Post Comments */}
             {activeConversation.type === "POST_COMMENT" && (
-              <div className="px-6 py-3 border-b border-borderline bg-canvas/50 flex items-center justify-between gap-4">
+              <div className="px-6 py-3 border-b border-white/60 bg-white/25 backdrop-blur-md flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   {activeConversation.postMediaUrl && (
                     <img
                       src={activeConversation.postMediaUrl}
                       alt="Post Thumbnail"
-                      className="w-11 h-11 rounded-lg object-cover border border-borderline shrink-0"
+                      className="w-11 h-11 rounded-xl object-cover border border-white shrink-0 shadow-sm"
                     />
                   )}
                   <div className="min-w-0">
@@ -733,12 +733,12 @@ function InboxContent() {
                     )}
 
                     <div
-                      className={`max-w-lg rounded-2xl px-4 py-3 text-sm relative group shadow-subtle ${
+                      className={`max-w-lg rounded-2xl px-4 py-3 text-sm relative group ${
                         isCustomer
-                          ? "bg-surface text-charcoal border border-borderline rounded-bl-sm"
+                          ? "bg-white/85 backdrop-blur-md text-charcoal border border-white shadow-[0_4px_16px_rgba(24,26,31,0.04),inset_0_1px_1px_rgba(255,255,255,0.95)] rounded-bl-sm"
                           : isAuto
-                          ? "bg-subtle text-charcoal border border-borderline rounded-br-sm"
-                          : "bg-charcoal text-white rounded-br-sm"
+                          ? "glass-pill text-charcoal border border-white rounded-br-sm"
+                          : "bg-gradient-to-b from-[#242730] to-[#14161A] text-white shadow-[0_8px_20px_rgba(24,26,31,0.25),inset_0_1px_1px_rgba(255,255,255,0.35)] border border-white/15 rounded-br-sm"
                       }`}
                     >
                       {/* Sender label for Automation */}
@@ -784,7 +784,7 @@ function InboxContent() {
 
                       {/* Comment controls (Like / Hide) for customer comments */}
                       {isCustomer && msg.isPublicComment && (
-                        <div className="mt-2 pt-2 border-t border-borderline flex items-center gap-3">
+                        <div className="mt-2 pt-2 border-t border-borderline/60 flex items-center gap-3">
                           <button
                             onClick={() =>
                               handleToggleCommentAction(msg.id, "TOGGLE_LIKE")
@@ -835,7 +835,7 @@ function InboxContent() {
             </div>
 
             {/* Smart Reply Composer */}
-            <div className="p-4 border-t border-borderline bg-surface space-y-3 relative">
+            <div className="p-4 border-t border-white/60 bg-white/60 backdrop-blur-xl space-y-3 relative">
               {/* Quick Replies Menu Popover */}
               <AnimatePresence>
                 {showTemplatesMenu && (
@@ -932,12 +932,12 @@ function InboxContent() {
                     }
                   }}
                   placeholder="Type a message or press '/' for templates... (⌘+Enter to send)"
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-borderline bg-canvas/30 text-xs text-charcoal focus:outline-none focus:border-charcoal transition-colors resize-none font-arabic"
+                  className="flex-1 px-4 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all resize-none font-arabic"
                 />
                 <button
                   onClick={handleSendMessage}
                   disabled={isSending || !composerText.trim()}
-                  className="px-4 py-3 rounded-xl bg-charcoal text-white hover:bg-charcoal/90 transition-all flex items-center justify-center disabled:opacity-50 shadow-subtle shrink-0"
+                  className="px-4 py-3 rounded-xl glass-button-primary text-white flex items-center justify-center disabled:opacity-50 shrink-0"
                 >
                   {isSending ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -954,7 +954,7 @@ function InboxContent() {
       {/* =========================================================================
           COLUMN 3: CRM CUSTOMER PROFILE & LEAD CARD (RIGHT)
          ========================================================================= */}
-      <div className="w-80 border-l border-borderline flex flex-col bg-surface shrink-0 overflow-y-auto">
+      <div className="w-80 border-l border-white/70 flex flex-col bg-white/40 backdrop-blur-xl shrink-0 overflow-y-auto">
         {!activeConversation?.contact ? (
           <div className="p-6 text-center text-muted text-xs">
             No contact selected
