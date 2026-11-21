@@ -132,15 +132,44 @@ export async function sendAuthorizationEmail({
     </div>
   `;
 
-  // Attempt dispatch via SMTP if configured
+  let mode = "standalone";
+
+  // 1. Attempt dispatch via Resend HTTP API (Fastest & Native for Vercel)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resendRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Instagram CRM <onboarding@resend.dev>",
+          to: [targetEmail],
+          subject: `[${code}] ${subjectTitle}`,
+          html: emailHtml,
+        }),
+      });
+
+      if (resendRes.ok) {
+        console.log(`[MAILER] Code sent via Resend API to ${targetEmail}`);
+        mode = "resend";
+      } else {
+        const errText = await resendRes.text();
+        console.warn("[MAILER] Resend API error:", errText);
+      }
+    } catch (resendErr) {
+      console.warn("[MAILER] Resend dispatch error:", resendErr);
+    }
+  }
+
+  // 2. Attempt dispatch via SMTP if Resend is not configured
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = Number(process.env.SMTP_PORT) || 587;
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
 
-  let mode = "standalone";
-
-  if (smtpHost && smtpUser && smtpPass) {
+  if (mode === "standalone" && smtpHost && smtpUser && smtpPass) {
     try {
       const transporter = nodemailer.createTransport({
         host: smtpHost,
@@ -161,7 +190,9 @@ export async function sendAuthorizationEmail({
     } catch (err) {
       console.error("[MAILER ERROR] SMTP failed:", err);
     }
-  } else {
+  }
+
+  if (mode === "standalone") {
     console.log(`\n======================================================`);
     console.log(`[${type} CODE FOR ${targetEmail}]: ${code}`);
     console.log(`======================================================\n`);

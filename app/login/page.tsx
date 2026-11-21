@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Lock,
@@ -16,6 +16,8 @@ import {
   ChevronLeft,
   Send,
   Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
@@ -29,6 +31,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>("LOGIN");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [systemHasAdmin, setSystemHasAdmin] = useState<boolean | null>(null);
 
   // Form Fields (Sign In)
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -49,6 +52,33 @@ export default function LoginPage() {
   const [verificationCode, setVerificationCode] = useState("");
   const [resetAuthTicket, setResetAuthTicket] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
+  // Interactive Code Modal
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [activeDisplayCode, setActiveDisplayCode] = useState("");
+  const [codeCopied, setCodeCopied] = useState(false);
+
+  // Check if system already has an admin user
+  useEffect(() => {
+    fetch("/api/auth/system-status")
+      .then((r) => r.json())
+      .then((data) => {
+        setSystemHasAdmin(data.hasAdmin);
+        if (!data.hasAdmin) {
+          setMode("REGISTER");
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleCopyCode = () => {
+    if (activeDisplayCode) {
+      navigator.clipboard.writeText(activeDisplayCode);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+      toast({ title: "Code Copied to Clipboard", type: "success" });
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +135,8 @@ export default function LoginPage() {
         if (data.authTicket) setRegAuthTicket(data.authTicket);
         if (data.code) {
           setRegCode(data.code);
+          setActiveDisplayCode(data.code);
+          setShowCodeModal(true);
           toast({
             title: "Authorization Code Generated",
             description: `Code: [ ${data.code} ] - Sent to karim.media.119@gmail.com`,
@@ -198,6 +230,8 @@ export default function LoginPage() {
         if (data.authTicket) setResetAuthTicket(data.authTicket);
         if (data.code) {
           setVerificationCode(data.code);
+          setActiveDisplayCode(data.code);
+          setShowCodeModal(true);
           toast({
             title: "Security Code Generated",
             description: `Code: [ ${data.code} ] - Sent to karim.media.119@gmail.com`,
@@ -294,6 +328,19 @@ export default function LoginPage() {
         <div className="absolute -top-24 -left-24 w-52 h-52 rounded-full bg-white/45 blur-2xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-52 h-52 rounded-full bg-slate-300/30 blur-2xl pointer-events-none" />
 
+        {/* First-time setup banner if 0 admins exist */}
+        {systemHasAdmin === false && (
+          <div className="mb-5 p-3.5 rounded-2xl bg-black/[0.03] border border-black/10 text-xs text-charcoal flex items-start gap-2.5 shadow-subtle">
+            <Sparkles className="w-4 h-4 text-charcoal shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-charcoal">Initial Setup / إعداد النظام الأول</p>
+              <p className="text-[11px] text-muted mt-0.5 leading-relaxed">
+                Create your Primary Administrator account to initialize your personal CRM workspace.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Tab Switcher: Login vs Add New Account */}
         {mode !== "FORGOT_PASSWORD" && (
           <div className="flex items-center gap-1 p-1 bg-white/40 backdrop-blur-md rounded-2xl border border-white/70 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] mb-6 text-xs font-medium">
@@ -315,7 +362,7 @@ export default function LoginPage() {
                   : "text-muted hover:text-charcoal"
               }`}
             >
-              Add New Account (إضافة حساب)
+              {systemHasAdmin === false ? "Create Admin (إنشاء حساب)" : "Add Account (إضافة حساب)"}
             </button>
           </div>
         )}
@@ -349,10 +396,15 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => setMode("FORGOT_PASSWORD")}
-                  className="text-[11px] text-body hover:text-charcoal underline transition-colors"
+                  onClick={() => {
+                    setMode("FORGOT_PASSWORD");
+                    setCodeSent(false);
+                    setVerificationCode("");
+                    setNewPassword("");
+                  }}
+                  className="text-[11px] font-semibold text-muted hover:text-charcoal transition-colors"
                 >
-                  Forgot Password? (نسيت كلمة المرور)
+                  Forgot Password?
                 </button>
               </div>
               <div className="relative">
@@ -362,13 +414,13 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="Enter password"
                   className="w-full pl-10 pr-10 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -382,7 +434,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50 mt-3"
+              className="w-full py-3.5 rounded-xl glass-button-primary text-white text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
             >
               {isLoading ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -397,25 +449,13 @@ export default function LoginPage() {
         )}
 
         {/* =========================================================================
-            MODE 2: ADD NEW ACCOUNT (WITH MANDATORY SECURITY CODE TO karim.media.119@gmail.com)
+            MODE 2: REGISTRATION WITH SECURITY CODE
            ========================================================================= */}
         {mode === "REGISTER" && (
-          <form onSubmit={handleRegister} className="space-y-4">
-            {/* 3D Glass Security Notice Box */}
-            <div className="p-3.5 rounded-2xl bg-white/40 backdrop-blur-md border border-white/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_4px_14px_rgba(24,26,31,0.02)] text-xs space-y-1.5">
-              <div className="flex items-center gap-2 text-charcoal font-semibold">
-                <ShieldCheck className="w-4 h-4 text-charcoal" />
-                <span>Security Authorization Required</span>
-              </div>
-              <p className="text-body text-[11px] leading-relaxed">
-                To create a new account, enter the 6-digit verification code sent to the master authorization email:{" "}
-                <strong className="text-charcoal font-mono">karim.media.119@gmail.com</strong>
-              </p>
-            </div>
-
+          <form onSubmit={handleRegister} className="space-y-3.5">
             <div>
               <label className="text-xs font-semibold text-charcoal block mb-1.5">
-                New Account Username
+                Username
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -424,7 +464,7 @@ export default function LoginPage() {
                   required
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value)}
-                  placeholder="e.g. omar_sales"
+                  placeholder="e.g. karim_admin"
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all font-mono"
                 />
               </div>
@@ -441,7 +481,7 @@ export default function LoginPage() {
                   required
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
-                  placeholder="agent@atelier.luxury"
+                  placeholder="karim.media.119@gmail.com"
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs text-charcoal focus:outline-none transition-all font-mono"
                 />
               </div>
@@ -521,7 +561,14 @@ export default function LoginPage() {
                   {regCode && (
                     <div className="text-[11px] text-muted flex items-center justify-between bg-black/5 px-2.5 py-1.5 rounded-lg border border-black/5">
                       <span>Code: <strong className="font-mono text-charcoal text-xs tracking-wider">{regCode}</strong></span>
-                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">READY</span>
+                      <button
+                        type="button"
+                        onClick={handleCopyCode}
+                        className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1 hover:bg-emerald-100"
+                      >
+                        {codeCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        <span>{codeCopied ? "COPIED" : "COPY"}</span>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -612,7 +659,16 @@ export default function LoginPage() {
                   {verificationCode && (
                     <div className="text-[11px] text-muted flex items-center justify-between bg-black/5 px-2.5 py-1.5 rounded-lg border border-black/5">
                       <span>Code: <strong className="font-mono text-charcoal text-xs tracking-wider">{verificationCode}</strong></span>
-                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">READY</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(verificationCode);
+                          toast({ title: "Code Copied", type: "success" });
+                        }}
+                        className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
+                      >
+                        COPY
+                      </button>
                     </div>
                   )}
                 </div>
@@ -655,7 +711,10 @@ export default function LoginPage() {
                   {isLoading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    <span>Save New Password & Sign In</span>
+                    <>
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Verify Code & Update Password</span>
+                    </>
                   )}
                 </button>
               </form>
@@ -663,6 +722,59 @@ export default function LoginPage() {
           </div>
         )}
       </motion.div>
+
+      {/* Code Modal Pop-up */}
+      <AnimatePresence>
+        {showCodeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-sm p-6 rounded-3xl glass-panel text-center space-y-4 shadow-2xl border border-white/80"
+            >
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-charcoal text-white flex items-center justify-center shadow-lg">
+                <KeyRound className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-charcoal">Security Authorization Code</h3>
+                <p className="text-xs text-muted mt-1">Dispatched to <strong className="text-charcoal">karim.media.119@gmail.com</strong></p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/90 border border-charcoal/10 shadow-inner flex items-center justify-center gap-3">
+                <span className="font-mono text-3xl font-bold tracking-[0.25em] text-charcoal">{activeDisplayCode}</span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="p-2 rounded-lg bg-black/5 hover:bg-black/10 text-charcoal transition-colors"
+                  title="Copy Code"
+                >
+                  {codeCopied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-[11px] text-muted">
+                This code has been dispatched to your email and pre-filled in your form.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowCodeModal(false)}
+                className="w-full py-3 rounded-xl glass-button-primary text-white text-xs font-semibold"
+              >
+                Continue Registration
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Luxury Footer Monogram */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="text-[11px] text-muted mt-7 text-center font-medium tracking-wider uppercase relative z-10"
+      >
+        Atelier Monochromatic • Ultra-Glass Architectural Design
+      </motion.p>
     </div>
   );
 }

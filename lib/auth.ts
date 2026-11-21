@@ -122,27 +122,42 @@ export function verifyAuthTicket(token: string): AuthTicketPayload | null {
   }
 }
 
-export async function getSessionUser() {
-  const cookieStore = cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-  if (!token) return null;
+export async function getSessionUser(request?: any) {
+  try {
+    let token: string | undefined;
 
-  const session = verifySessionToken(token);
-  if (!session) return null;
+    if (request && request.cookies && typeof request.cookies.get === "function") {
+      token = request.cookies.get(COOKIE_NAME)?.value;
+    } else {
+      try {
+        const cookieStore = cookies();
+        token = cookieStore.get(COOKIE_NAME)?.value;
+      } catch {
+        token = undefined;
+      }
+    }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      role: true,
-      adminId: true,
-      createdAt: true,
-    },
-  });
+    if (!token) return null;
 
-  return user;
+    const session = verifySessionToken(token);
+    if (!session) return null;
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        adminId: true,
+        createdAt: true,
+      },
+    });
+
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 export async function getTenantWorkspaceId(): Promise<string | null> {

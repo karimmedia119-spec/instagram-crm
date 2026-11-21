@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     if (!code || code.trim() === "") {
       return NextResponse.json(
-        { error: "Security authorization code sent to karim.media.119@gmail.com is required" },
+        { error: "Security authorization code is required" },
         { status: 400 }
       );
     }
@@ -93,24 +93,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const currentLoggedInUser = await getSessionUser();
+    const userCount = await prisma.user.count();
+    const isFirstUser = userCount === 0;
+
+    const currentLoggedInUser = await getSessionUser(request);
     const parentAdminId = currentLoggedInUser && currentLoggedInUser.role === "ADMIN"
       ? currentLoggedInUser.id
       : null;
 
     const passwordHash = await hashPassword(password);
+    const assignedRole = isFirstUser ? "ADMIN" : (role === "AGENT" ? "AGENT" : "ADMIN");
 
     const newUser = await prisma.user.create({
       data: {
         username: username.trim(),
         email: email.trim().toLowerCase(),
         passwordHash,
-        role: role === "AGENT" ? "AGENT" : "ADMIN",
-        adminId: role === "AGENT" ? parentAdminId : null,
+        role: assignedRole,
+        adminId: (!isFirstUser && role === "AGENT") ? parentAdminId : null,
       },
     });
 
-    // If new user is an independent Admin, create their dedicated WebhookConfig
+    // If new user is an Admin (or first user), create their dedicated WebhookConfig
     if (newUser.role === "ADMIN") {
       await prisma.webhookConfig.create({
         data: {
@@ -148,18 +152,16 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // If not already logged in, log them in automatically
-    if (!currentLoggedInUser) {
-      response.cookies.set({
-        name: COOKIE_NAME,
-        value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60,
-        path: "/",
-      });
-    }
+    // Automatically log user in
+    response.cookies.set({
+      name: COOKIE_NAME,
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/",
+    });
 
     return response;
   } catch (error) {
