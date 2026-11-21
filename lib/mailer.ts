@@ -93,36 +93,34 @@ export async function sendAuthorizationEmail({
 
   const subjectTitle =
     type === "REGISTRATION"
-      ? "New Account Creation Security Code"
-      : "Password Reset Verification Code";
+      ? "رمز التحقق لإنشاء حساب جديد في Instagram CRM"
+      : "رمز استعادة وتغيير كلمة المرور في Instagram CRM";
 
   const emailHtml = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F4F5F7; padding: 40px 20px; color: #181A1F;">
-      <div style="max-width: 520px; margin: 0 auto; background-color: #FFFFFF; border-radius: 16px; border: 1px solid #E2E5EC; padding: 36px; box-shadow: 0 10px 25px -5px rgba(24, 26, 31, 0.05);">
-        <div style="margin-bottom: 24px; text-align: center;">
-          <div style="display: inline-block; background-color: #181A1F; color: #FFFFFF; width: 44px; height: 44px; line-height: 44px; border-radius: 10px; font-weight: bold; font-size: 14px;">
-            IG
-          </div>
-          <h1 style="font-size: 20px; font-weight: 700; color: #181A1F; margin: 16px 0 4px 0;">Instagram CRM Security</h1>
-          <p style="font-size: 13px; color: #8E95A2; margin: 0;">${subjectTitle}</p>
+      <div style="max-width: 520px; margin: 0 auto; background-color: #FFFFFF; border-radius: 16px; border: 1px solid #E2E5EC; padding: 36px; box-shadow: 0 10px 25px -5px rgba(24, 26, 31, 0.05); text-align: center;">
+        <div style="display: inline-block; background-color: #181A1F; color: #FFFFFF; width: 48px; height: 48px; line-height: 48px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 16px;">
+          IG
         </div>
+        <h1 style="font-size: 20px; font-weight: 700; color: #181A1F; margin: 0 0 8px 0;">Instagram CRM Security</h1>
+        <p style="font-size: 14px; color: #525866; margin: 0 0 24px 0;">${subjectTitle}</p>
 
-        <p style="font-size: 14px; line-height: 1.6; color: #525866; margin-bottom: 24px;">
+        <p style="font-size: 14px; line-height: 1.6; color: #525866; margin-bottom: 24px; text-align: right; direction: rtl;">
           ${
             type === "REGISTRATION"
-              ? `An authorization request was made to create a new user account (${requestDetails || "New Admin"}). Use the 6-digit code below to approve and create this account:`
-              : `A password reset request was initiated for your account. Use the 6-digit verification code below to authorize this change:`
+              ? `تم طلب إنشاء حساب جديد (${requestDetails || "مدير جديد"}). استخدم رمز الأمان المكون من 6 أرقام أدناه لإتمام التسجيل:`
+              : `تم طلب إعادة تعيين كلمة المرور لحسابك. استخدم رمز الأمان المكون من 6 أرقام أدناه لتأكيد التغيير:`
           }
         </p>
 
-        <div style="background-color: #ECEEF2; border-radius: 12px; border: 1px solid #E2E5EC; padding: 18px; text-align: center; margin-bottom: 24px;">
-          <span style="font-family: monospace; font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #181A1F;">
+        <div style="background-color: #F0F2F5; border-radius: 12px; border: 1px solid #E2E5EC; padding: 20px; text-align: center; margin-bottom: 24px;">
+          <span style="font-family: monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #181A1F;">
             ${code}
           </span>
         </div>
 
-        <p style="font-size: 12px; color: #8E95A2; line-height: 1.5; margin: 0 0 16px 0;">
-          This code expires in <strong>15 minutes</strong>. If you did not authorize this action, you can safely ignore this email.
+        <p style="font-size: 12px; color: #8E95A2; line-height: 1.6; margin: 0 0 20px 0; direction: rtl;">
+          هذا الرمز صالح لمدة <strong>15 دقيقة فقط</strong>. إذا لم تكن أنت من قام بهذا الإجراء، يمكنك تجاهل هذه الرسالة بأمان.
         </p>
 
         <div style="border-top: 1px solid #E2E5EC; padding-top: 16px; text-align: center; font-size: 11px; color: #8E95A2;">
@@ -132,71 +130,29 @@ export async function sendAuthorizationEmail({
     </div>
   `;
 
-  let mode = "standalone";
-
-  // Tier 1: Dispatch via Resend HTTP API if key is present
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const resendRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "Instagram CRM <onboarding@resend.dev>",
-          to: [targetEmail],
-          subject: `[${code}] ${subjectTitle}`,
-          html: emailHtml,
-        }),
-      });
-
-      if (resendRes.ok) {
-        console.log(`[MAILER] Code sent via Resend API to ${targetEmail}`);
-        mode = "resend";
-      } else {
-        const errText = await resendRes.text();
-        console.warn("[MAILER] Resend API note:", errText);
-      }
-    } catch (resendErr) {
-      console.warn("[MAILER] Resend dispatch error:", resendErr);
-    }
-  }
-
-  // Tier 2: Dispatch directly via official Gmail SMTP
+  // Dispatch directly via official Gmail SMTP
   const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
   const smtpPort = Number(process.env.SMTP_PORT) || 465;
   const smtpUser = process.env.SMTP_USER || TARGET_ADMIN_EMAIL;
   const smtpPass = process.env.SMTP_PASS || "zbrqqrssiczvvxel";
 
-  if (mode === "standalone" && smtpPass) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        auth: { user: smtpUser, pass: smtpPass },
-      });
+  const transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpPort === 465,
+    auth: { user: smtpUser, pass: smtpPass },
+  });
 
-      await transporter.sendMail({
-        from: `"Instagram CRM Security" <${smtpUser}>`,
-        to: targetEmail,
-        subject: `[${code}] ${subjectTitle}`,
-        html: emailHtml,
-      });
+  await transporter.sendMail({
+    from: `"Instagram CRM Security" <${smtpUser}>`,
+    to: targetEmail,
+    subject: `[${code}] ${subjectTitle}`,
+    html: emailHtml,
+  });
 
-      console.log(`[MAILER] ${type} code sent via Gmail SMTP to ${targetEmail}`);
-      mode = "smtp";
-    } catch (err) {
-      console.error("[MAILER ERROR] Gmail SMTP failed:", err);
-    }
-  }
+  console.log(`[MAILER] ${type} code sent via Gmail SMTP to ${targetEmail}`);
 
-  console.log(`\n======================================================`);
-  console.log(`[${type} CODE FOR ${targetEmail}]: ${code} (Mode: ${mode})`);
-  console.log(`======================================================\n`);
-
-  return { success: true, code, authTicket, mode };
+  return { success: true, authTicket, mode: "smtp" };
 }
 
 export async function sendPasswordResetEmail(targetEmail: string = TARGET_ADMIN_EMAIL) {

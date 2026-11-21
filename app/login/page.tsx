@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Lock,
   User,
@@ -16,8 +16,6 @@ import {
   ChevronLeft,
   Send,
   Sparkles,
-  Copy,
-  Check,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
@@ -53,11 +51,6 @@ export default function LoginPage() {
   const [resetAuthTicket, setResetAuthTicket] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  // Interactive Code Modal
-  const [showCodeModal, setShowCodeModal] = useState(false);
-  const [activeDisplayCode, setActiveDisplayCode] = useState("");
-  const [codeCopied, setCodeCopied] = useState(false);
-
   // Check if system already has an admin user
   useEffect(() => {
     fetch("/api/auth/system-status")
@@ -70,15 +63,6 @@ export default function LoginPage() {
       })
       .catch(() => {});
   }, []);
-
-  const handleCopyCode = () => {
-    if (activeDisplayCode) {
-      navigator.clipboard.writeText(activeDisplayCode);
-      setCodeCopied(true);
-      setTimeout(() => setCodeCopied(false), 2000);
-      toast({ title: "Code Copied to Clipboard", type: "success" });
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,26 +117,16 @@ export default function LoginPage() {
       if (res.ok) {
         setRegCodeSent(true);
         if (data.authTicket) setRegAuthTicket(data.authTicket);
-        if (data.code) {
-          setRegCode(data.code);
-          setActiveDisplayCode(data.code);
-          setShowCodeModal(true);
-          toast({
-            title: "Authorization Code Generated",
-            description: `Code: [ ${data.code} ] - Sent to karim.media.119@gmail.com`,
-            type: "success",
-          });
-        } else {
-          toast({
-            title: "Authorization Code Dispatched",
-            description: "6-digit code has been sent to karim.media.119@gmail.com",
-            type: "success",
-          });
-        }
+        setRegCode(""); // Keep input blank for user to type from email
+        toast({
+          title: "تم إرسال كود التحقق بنجاح",
+          description: "تم إرسال الرمز المكون من 6 أرقام إلى بريدك karim.media.119@gmail.com",
+          type: "success",
+        });
       } else {
         toast({
-          title: "Dispatch Failed",
-          description: data.error || "Could not dispatch code",
+          title: "فشل الإرسال",
+          description: data.error || "تعذر إرسال كود التحقق إلى البريد",
           type: "error",
         });
       }
@@ -167,8 +141,8 @@ export default function LoginPage() {
 
     if (!regCode || regCode.trim().length < 6) {
       toast({
-        title: "Security Code Required",
-        description: "Please enter the 6-digit code sent to karim.media.119@gmail.com",
+        title: "الرمز مطلوب",
+        description: "يرجى إدخال الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني",
         type: "error",
       });
       return;
@@ -195,8 +169,8 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast({
-          title: "Account Created Successfully",
-          description: `Independent workspace initialized for @${data.user.username}!`,
+          title: "تم إنشاء الحساب بنجاح",
+          description: `تم تهيئة مساحة العمل الخاصة بك @${data.user.username}!`,
           type: "success",
         });
         router.push("/");
@@ -228,24 +202,14 @@ export default function LoginPage() {
       if (res.ok) {
         setCodeSent(true);
         if (data.authTicket) setResetAuthTicket(data.authTicket);
-        if (data.code) {
-          setVerificationCode(data.code);
-          setActiveDisplayCode(data.code);
-          setShowCodeModal(true);
-          toast({
-            title: "Security Code Generated",
-            description: `Code: [ ${data.code} ] - Sent to karim.media.119@gmail.com`,
-            type: "success",
-          });
-        } else {
-          toast({
-            title: "Security Code Dispatched",
-            description: `Sent 6-digit code to karim.media.119@gmail.com`,
-            type: "success",
-          });
-        }
+        setVerificationCode(""); // Keep input blank for user to type from email
+        toast({
+          title: "تم إرسال كود الاستعادة بنجاح",
+          description: "تم إرسال رمز الأمان المكون من 6 أرقام إلى بريدك karim.media.119@gmail.com",
+          type: "success",
+        });
       } else {
-        toast({ title: "Failed to send reset code", type: "error" });
+        toast({ title: "فشل إرسال كود الاستعادة", type: "error" });
       }
     } catch {
       setIsLoading(false);
@@ -333,9 +297,9 @@ export default function LoginPage() {
           <div className="mb-5 p-3.5 rounded-2xl bg-black/[0.03] border border-black/10 text-xs text-charcoal flex items-start gap-2.5 shadow-subtle">
             <Sparkles className="w-4 h-4 text-charcoal shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-charcoal">Initial Setup / إعداد النظام الأول</p>
+              <p className="font-bold text-charcoal">إعداد المدير الأول / Primary Setup</p>
               <p className="text-[11px] text-muted mt-0.5 leading-relaxed">
-                Create your Primary Administrator account to initialize your personal CRM workspace.
+                أنشئ حساب المدير الرئيسي لتفعيل مساحة عمل CRM الخاصة بك بالكامل.
               </p>
             </div>
           </div>
@@ -548,29 +512,16 @@ export default function LoginPage() {
                   ) : (
                     <Send className="w-3 h-3" />
                   )}
-                  <span>{regCodeSent ? "Resend Code" : "Send Code to Email"}</span>
+                  <span>{regCodeSent ? "إعادة إرسال الكود" : "إرسال الكود إلى الإيميل"}</span>
                 </button>
               </div>
 
               {regCodeSent && (
-                <div className="text-[11px] text-body flex flex-col gap-1.5 bg-white/80 p-2.5 rounded-xl border border-white shadow-subtle">
-                  <div className="flex items-center gap-1.5 text-charcoal font-medium">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Code dispatched to <strong>karim.media.119@gmail.com</strong></span>
-                  </div>
-                  {regCode && (
-                    <div className="text-[11px] text-muted flex items-center justify-between bg-black/5 px-2.5 py-1.5 rounded-lg border border-black/5">
-                      <span>Code: <strong className="font-mono text-charcoal text-xs tracking-wider">{regCode}</strong></span>
-                      <button
-                        type="button"
-                        onClick={handleCopyCode}
-                        className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1 hover:bg-emerald-100"
-                      >
-                        {codeCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                        <span>{codeCopied ? "COPIED" : "COPY"}</span>
-                      </button>
-                    </div>
-                  )}
+                <div className="text-xs text-emerald-900 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>
+                    تم إرسال كود التحقق بنجاح إلى <strong>karim.media.119@gmail.com</strong>. يرجى فتح بريدك الإلكتروني وكتابة الكود بالأسفل:
+                  </span>
                 </div>
               )}
 
@@ -580,7 +531,7 @@ export default function LoginPage() {
                 maxLength={6}
                 value={regCode}
                 onChange={(e) => setRegCode(e.target.value)}
-                placeholder="Enter 6-digit code (e.g. 849201)"
+                placeholder="أدخل الرمز المكون من 6 أرقام من الإيميل"
                 className="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-charcoal text-center tracking-widest font-mono font-bold focus:outline-none"
               />
             </div>
@@ -623,7 +574,7 @@ export default function LoginPage() {
                 Reset Administrator Password
               </h2>
               <p className="text-xs text-muted mt-1 leading-relaxed">
-                Security verification code will be sent to the administrator recovery address:{" "}
+                Security verification code will be sent to your administrator recovery address:{" "}
                 <strong className="text-charcoal font-mono">karim.media.119@gmail.com</strong>
               </p>
             </div>
@@ -641,36 +592,21 @@ export default function LoginPage() {
                   ) : (
                     <>
                       <KeyRound className="w-4 h-4" />
-                      <span>Send 6-Digit Code to karim.media.119@gmail.com</span>
+                      <span>إرسال كود الاستعادة إلى karim.media.119@gmail.com</span>
                     </>
                   )}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
-                <div className="p-3 rounded-xl bg-white/70 backdrop-blur-md border border-white text-xs space-y-2 shadow-subtle">
-                  <div className="flex items-center gap-1.5 text-charcoal font-semibold">
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1 text-emerald-900 shadow-subtle">
+                  <div className="flex items-center gap-1.5 font-semibold">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Code Dispatched!</span>
+                    <span>تم إرسال كود التحقق بنجاح!</span>
                   </div>
-                  <p className="text-muted text-[11px]">
-                    Check the inbox of <strong>karim.media.119@gmail.com</strong> and enter the 6-digit code below:
+                  <p className="text-[11px] text-emerald-800">
+                    يرجى تفقد صندوق الوارد في <strong>karim.media.119@gmail.com</strong> وإدخال الرمز المكون من 6 أرقام بالأسفل:
                   </p>
-                  {verificationCode && (
-                    <div className="text-[11px] text-muted flex items-center justify-between bg-black/5 px-2.5 py-1.5 rounded-lg border border-black/5">
-                      <span>Code: <strong className="font-mono text-charcoal text-xs tracking-wider">{verificationCode}</strong></span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(verificationCode);
-                          toast({ title: "Code Copied", type: "success" });
-                        }}
-                        className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
-                      >
-                        COPY
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 <div>
@@ -722,49 +658,6 @@ export default function LoginPage() {
           </div>
         )}
       </motion.div>
-
-      {/* Code Modal Pop-up */}
-      <AnimatePresence>
-        {showCodeModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="w-full max-w-sm p-6 rounded-3xl glass-panel text-center space-y-4 shadow-2xl border border-white/80"
-            >
-              <div className="w-12 h-12 mx-auto rounded-2xl bg-charcoal text-white flex items-center justify-center shadow-lg">
-                <KeyRound className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-charcoal">Security Authorization Code</h3>
-                <p className="text-xs text-muted mt-1">Dispatched to <strong className="text-charcoal">karim.media.119@gmail.com</strong></p>
-              </div>
-              <div className="p-4 rounded-2xl bg-white/90 border border-charcoal/10 shadow-inner flex items-center justify-center gap-3">
-                <span className="font-mono text-3xl font-bold tracking-[0.25em] text-charcoal">{activeDisplayCode}</span>
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  className="p-2 rounded-lg bg-black/5 hover:bg-black/10 text-charcoal transition-colors"
-                  title="Copy Code"
-                >
-                  {codeCopied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                </button>
-              </div>
-              <p className="text-[11px] text-muted">
-                This code has been dispatched to your email and pre-filled in your form.
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowCodeModal(false)}
-                className="w-full py-3 rounded-xl glass-button-primary text-white text-xs font-semibold"
-              >
-                Continue Registration
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Luxury Footer Monogram */}
       <motion.p
