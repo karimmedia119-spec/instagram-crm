@@ -97,7 +97,7 @@ export async function sendAuthorizationEmail({
       : "Password Reset Verification Code";
 
   const emailHtml = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #F4F5F7; padding: 40px 20px; color: #181A1F;">
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F4F5F7; padding: 40px 20px; color: #181A1F;">
       <div style="max-width: 520px; margin: 0 auto; background-color: #FFFFFF; border-radius: 16px; border: 1px solid #E2E5EC; padding: 36px; box-shadow: 0 10px 25px -5px rgba(24, 26, 31, 0.05);">
         <div style="margin-bottom: 24px; text-align: center;">
           <div style="display: inline-block; background-color: #181A1F; color: #FFFFFF; width: 44px; height: 44px; line-height: 44px; border-radius: 10px; font-weight: bold; font-size: 14px;">
@@ -163,11 +163,11 @@ export async function sendAuthorizationEmail({
     }
   }
 
-  // Tier 2: Dispatch directly via Gmail SMTP / Custom SMTP
+  // Tier 2: Dispatch directly via official Gmail SMTP
   const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
   const smtpPort = Number(process.env.SMTP_PORT) || 465;
   const smtpUser = process.env.SMTP_USER || TARGET_ADMIN_EMAIL;
-  const smtpPass = process.env.SMTP_PASS;
+  const smtpPass = process.env.SMTP_PASS || "zbrqqrssiczvvxel";
 
   if (mode === "standalone" && smtpPass) {
     try {
